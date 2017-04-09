@@ -5,42 +5,32 @@ from datetime import datetime, timedelta, time
 from dateutil import rrule
 import re
 
-
-
+# Списки ключевых слов, регулярные выражения -- для присвоения тегов
 course_list = [ u'уирс', u'бола', u'спецтех1', u'мсс', u'ипк', u'пиивк', u'алгивк', u'цс сула', u'цс ивк', u'мио ивк']
-
 sem_start_re = re.compile( u'начало семестра: [0-9.]+' )
 sem_finish_re = re.compile( u'конец семестра: [0-9.]+' )
 prof_list = [ u'Белобжеский', u'Гуреев', u'Захарян', u'Костюков', u'Капырин', u'Новичков', u'Мингалиев', u'Нгуен', u'Соболев', u'Сурков', u'Ушаков', u'Мишин']
 prof_shorter = [ u'Белоб-\nжеский', u'Гуреев', u'Захарян', u'Костюков', u'Капырин', u'Нович-\nков', u'Минга-\nлиев', u'Нгуен', u'Соболев', u'Сурков', u'Ушаков', u'Мишин']
-
 group_re = re.compile( u'[1-9,З][O,О,З,0,о,з][0-9]{3}[CСБМсбкиКИ]+' ) # 3О505С
 time_re = re.compile(  u'[0-9]{1,2}:[0-9]{1,2}' )                     # 0:00   99:99
-
 week_span_re = [ re.compile( u'нед[0-9,]+$' ), \
                  re.compile( u'нед[0-9]+-[0-9]+' ), \
                  re.compile( u'до[0-9]+-[0-9]+нед' ), \
                  re.compile( u'с[0-9]+нед' ), \
                  re.compile( u'до[0-9]+нед' ) ]
-
 date_span1 = re.compile( u'[сc][0-9]{1,2}.[0-9]{1,2}по[0-9]{1,2}.[0-9]{1,2}' ) # с 00.00 по 00.00
 date_span2 = re.compile( u'с[0-9]{1,2}.[0-9]{1,2}' )                           # с 00.00
 date_span3 = re.compile( u'[пд]о[0-9]{1,2}.[0-9]{1,2}' )                       # по 00.00   до   00.00
-
 fio_marks = [ re.compile( u'проф[. ]+' ), \
               re.compile( u'доц[. ]+' ), \
               re.compile( u'ст[. ]+пр[. ]+' ), \
               re.compile( u'асс[. ]+' ), \
               re.compile( u'[А-Яа-я]+ [А-Я]+\.[А-Я]\.' ), \
               re.compile( u'[А-Я]+\.[А-Я]\.[ ]*[А-Яа-я]+' ) ]
-
 group_span = re.compile( u'[0-9]к[0-9]ф[сб]?' )
 group_marker1 = re.compile( u'[0-9]к[0-9]ф[CСБсб]?$' )
 group_marker2 = re.compile( u'[1-9,З][O,О,З,0,о,з][0-9]{3}[CСБМсбкиКИ]+$' )
-
 month_names = [ u'янв', u'фев', u'мар', u'апр', u'мая', u'июн', u'июл', u'авг', u'сен', u'окт', u'ноя', u'дек' ]
-
-ct_marker_LAB = u'ЛАБ'; ct_marker_LK = u'ЛК'; ct_marker_PZ = u'ПЗ';
 
 from matplotlib import cm
 cmap = cm.get_cmap('Pastel1') # Spectral, hsv, 
@@ -62,33 +52,38 @@ wday4 = [u'четверг', u'чт', u'чг', u'чет']
 wday5 = [u'пятница', u'пя', u'пт', u'пят']
 wday6 = [u'суббота', u'сб', u'су', u'суб']
 wday7 = [u'воскресенье', u'вс', u'во', u'вос']
+wday_list = wday1 + wday2 + wday3 + wday4 + wday5 + wday6 + wday7
 
 #wdays = [u'Понедельник', u'Вторник', u'Среда', u'Четверг', u'Пятница', u'Суббота', u'Воскресенье']
 wdays = [u'Пн', u'Вт', u'Ср', u'Чт', u'Пт', u'Сб', u'Вс']
 
-wday_list = wday1 + wday2 + wday3 + wday4 + wday5 + wday6 + wday7
 class_type_lab = [ u'лаб', u'лабораторная', u'лабораторна работа', u'лабораторные', u'лабораторные работы']
 class_type_lec = [ u'лекция', u'лз', u'лекции' ]
 class_type_pract = [ u'практика', u'пз', u'практическое занятие', u'практические занятия' ]
 class_type = class_type_lab + class_type_lec + class_type_pract
+ct_marker_LAB = u'ЛАБ'; ct_marker_LK = u'ЛК'; ct_marker_PZ = u'ПЗ';
 
 even_week_list = [u'н.н.', u'нн', u'нижниенедели', u'нижняянеделя']
 odd_week_list  = [u'в.н.', u'вн', u'верхниенедели', u'верхняянеделя']
 week_span_list = even_week_list + odd_week_list
 
-def courseId2groupName( s ): # 2к3фБ/3 -> 3О207Б  // пока, только очные группы
+
+# Сделать список групп из сокращённого обозначения (пока, только очные группы)
+def courseId2groupName( s ): # 2к3фБ/3 -> 3О207Б, ...
   s1 = s.split('/'); year = s1[0][0]; fac = s1[0][2]; gr_type = s1[0][4:]
   if len(s1)>1: gnum = s1[1]
   else: gnum = '0'
   s2 = fac + u'О' + year + '%02d' % int(gnum) + gr_type
   return s2
 
+# Вернуть название набора групп -- либо сокращённое обозначение, либо просто первую в списке
 def short_group_name( s ):
   # Простой вариант
   p = u''
   if s.count(',')>0 or s.count(' ')>0: p = u'…'
   return s.replace('(',' ').replace(',',' ').split(' ')[0] + p
 
+# Вернуть в качестве описания тега -- список групп, сгенерированный из укороченного описания
 def groupstring2list( s ):
   l = []
   mem = ''
@@ -103,6 +98,7 @@ def groupstring2list( s ):
       else: l.append( courseId2groupName(mem + '/' + t) )
   return l
 
+# Вернуть список из номеров недель, исходя из тега
 def weekspan2list( s ):   # н.н. | недели 3,5,7,9,11,13,15 | нед. 4,6,8,10
   l = [ int(x) for x in range(1,18) ]
   if s in even_week_list:  l = [2,4,6,8,10,12,14,16,18];
@@ -123,6 +119,7 @@ def weekspan2list( s ):   # н.н. | недели 3,5,7,9,11,13,15 | нед. 4,6
       else: l = s.split(',')
   return l
 
+# Определить, какие недели встречаются в списке -- верхние (up), нижние (dn) или обе (updn)
 def get_up_down_list( weeks_list ):
   ud = ''
   for i in [1,3,5,7,9,11,13,15,17]:
@@ -131,6 +128,7 @@ def get_up_down_list( weeks_list ):
       if i in weeks_list: ud += 'dn'; break;
   return ud
 
+# Присвоение тэга изучаемой записи
 def tag_me( s ):
   tag = ''
   if s in prof_list: tag = ('prof', s)
@@ -173,14 +171,7 @@ def tag_me( s ):
 
 
 
-
-
-
-
-
-
-
-
+# Открыть и прочитать расписание
 content = []
 with open( 'src' ) as f:
     content = f.read().splitlines()
@@ -190,8 +181,7 @@ content = [ c for c in content if not (len(c) > 0 and c[0] == '#') ]
 
 
 
-
-
+# Создаём новый календарь
 cal = Calendar()
 cal.add('version', '2.0')
 cal.add('prodid', '-//test file//example.com//')
@@ -268,6 +258,7 @@ for i in content:
               cal.add_component( event )
               first_event = 0
 
+      # Отладочный вывод обработанной строки
       ## print event
       #for g in event['groups'].split(' '):
       #  print g + ' -> ' + \
@@ -657,6 +648,14 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
     import lxml.etree as etree
     doc = etree.Element('svg', width=str(doc_w), height=str(doc_h), version='1.1', xmlns='http://www.w3.org/2000/svg')
     etree.SubElement( doc, 'rect', x=str(0), y=str(0), width=str(doc_w), height=str(doc_h), fill="white") # Белый фон
+
+    tx = etree.Element( 'text', x=str(left_space/2), y=str(top_space/2 + 8), height = str(top_space), width=str(left_space), fill='black', style=txt_style_1 );
+    tx.text = u''
+    if selected_prof != '': tx.text += selected_prof
+    if selected_room != '': tx.text += selected_room
+    if selected_group != '': tx.text += selected_group
+    if selected_course != '': tx.text += selected_course
+    doc.append( tx )
     
     # Номера недель
     for nw in range(0,nb_weeks):
@@ -690,7 +689,8 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
             ds = dt.strftime("%d.%m")
             yd = y + row_space
             xd = left_space  +  nw * (col_w + col_space)
-            etree.SubElement( doc, 'rect', x=str(xd), y=str(yd), width=str(col_w), height=str(date_space), rx=str(date_space/2), ry=str(date_space/2), stroke="lightgrey", fill='white')
+            # С запасом по ширине +- 1 единица
+            etree.SubElement( doc, 'rect', x=str(xd+1), y=str(yd), width=str(col_w-2), height=str(date_space), rx=str(date_space/2), ry=str(date_space/2), stroke="lightgrey", fill='white')
             tx = etree.Element( 'text', x=str(xd + col_w/2), y=str(yd + date_space/2 + 5), fill='black', style=txt_style_2 );  tx.text = ds; doc.append( tx )
 
         
@@ -702,7 +702,7 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
             x = 3*float(left_space)/5 + col_skip/2
             h = row_h
             # Полоска
-            etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(doc_w - x), height=str(h), rx=str(rxy), ry=str(rxy), fill='white', style='fill:#ffffff;fill-opacity:0.8' )
+            etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(doc_w - x), height=str(h), rx=str(rxy), ry=str(rxy), fill='white', style='fill:#ffffff;fill-opacity:0.5' )
             etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
             tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 + 8), fill='black', style=txt_style_2 );  tx.text = u'%d:%02d' %(timeslot.hour, timeslot.minute); doc.append( tx )
             y1 += h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space
@@ -758,11 +758,8 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
                                 y = str( y1 + 6 + h_ev/2 + shift[i] + dy ), \
                                 fill = 'black', style = style[i] );
                             tx.text = labels[i]; doc.append( tx )
-            y1 += h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space
-
-        #print ''
+            y1 += h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space    
     
-    #f = open('out/prof_list.svg', 'w')
     f = open('out/%s.svg' % f_name, 'w')
     f.write( '<?xml version=\"1.0\" standalone=\"no\"?>\n' )
     f.write( '<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n' )
@@ -807,18 +804,19 @@ for gl in groups_lists:
 # График присутствия по лекциям
 draw_prof_presence_list( fn='total_lec_list.svg' )
 
+# Нарисовать все расписания по группам, комнатам и преподавателям
 for p in prof_list: draw_prof_personal_sheet( selected_prof = p, f_name = 'prof_'+p+'_by_room', color_by_room = 1 );
 for p in prof_list: draw_prof_personal_sheet( selected_prof = p, f_name = 'prof_'+p+'_by_group', color_by_group = 1 );
 for r in rooms: draw_prof_personal_sheet( selected_room = r, f_name = 'room_'+r+'_by_prof', color_by_prof = 1 );
 for r in rooms: draw_prof_personal_sheet( selected_room = r, f_name = 'room_'+r+'_by_group', color_by_group = 1 );
 for g in groups: draw_prof_personal_sheet( selected_group = g, color_by_course = 1, f_name = 'group_'+g );
 
+# Нарисовать три образца расписания для отладки
 #p = prof_list[0];     draw_prof_personal_sheet( selected_prof = p, f_name = 'prof_'+p+'_by_room', color_by_room = 1 );
 #r = list(rooms)[10];  draw_prof_personal_sheet( selected_room = r, f_name = 'room_'+r+'_by_prof', color_by_prof = 1 );
 #g = list(groups)[10]; draw_prof_personal_sheet( selected_group = g, color_by_course = 1, f_name = 'group_'+g );
 
 #draw_prof_personal_sheet( selected_prof = prof_list[0], color_by_course = 1 );
-
 
 # Вывести календарь
 f = open( 'example.ics', 'wb' )
