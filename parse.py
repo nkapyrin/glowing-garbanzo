@@ -390,12 +390,10 @@ def draw_prof_room( selected_prof='', selected_room='', selected_group = '', col
                             x = left_space  +  nb_wday*col_skip  + (nb_stripes_before-1) * col_space + nb_stripes_before * col_w
                             y = top_space   +  nb_week*row_skip  + (nb_spans_before-1) * row_space + nb_spans_before * row_h
 
-                            if color_by_course == 1: fill_color = course_colors[ e['course'] ]
-                            elif selected_prof != '' or color_by_room==1: fill_color = room_colors[ e['location'] ]
-                            else:
-                                if e['prof'] in prof_colors.keys():
-                                    fill_color = prof_colors[ e['prof'] ]
-                                else: fill_color = 'white'
+                            if color_by_course == 1 and e['course'] in course_colors.keys(): fill_color = course_colors[ e['course'] ]
+                            elif color_by_room==1 and e['location'] in room_colors.keys(): fill_color = room_colors[ e['location'] ]
+                            elif color_by_prof==1 and e['prof'] in prof_colors.keys(): fill_color = prof_colors[ e['prof'] ]
+                            else: fill_color = 'white'
 
                             etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(col_w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill=fill_color )
                             y1 = y + h/2 + 3
@@ -731,15 +729,11 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
                         x1 = x + (nev + x_skip) * w
                         h_ev = 2*row_h + row_space if evt['type'] == ct_marker_LAB else row_h # n_timeslots_in_weekday_len[nwd][timeslot]
 
-                        if color_by_course == 1: fill_color = course_colors[ evt['course'] ]
-                        elif color_by_group == 1:
-                            if evt['group'] in groups_colors.keys(): fill_color = groups_colors[ evt['group'] ]
-                            else: fill_color = 'white'
-                        elif selected_prof != '' or color_by_room==1: fill_color = room_colors[ evt['location'] ]
-                        else:
-                            if evt['prof'] in prof_colors.keys():
-                                fill_color = prof_colors[ evt['prof'] ]
-                            else: fill_color = 'white'
+                        if color_by_course == 1 and evt['course'] in course_colors.keys(): fill_color = course_colors[ evt['course'] ]
+                        elif color_by_group == 1 and evt['group'] in groups_colors.keys(): fill_color = groups_colors[ evt['group'] ]
+                        elif color_by_room==1 and evt['location'] in room_colors.keys(): fill_color = room_colors[ evt['location'] ]
+                        elif color_by_prof==1 and evt['prof'] in prof_colors.keys(): fill_color = prof_colors[ evt['prof'] ]
+                        else: fill_color = 'white'
 
                         etree.SubElement( doc, 'rect', x=str(x1), y=str(y1), width=str(w), height=str(h_ev), rx=str(rxy), ry=str(rxy), stroke="black", fill=fill_color )
                     # Второй раз -- чтобы текст был поверх прямоугольников
@@ -809,6 +803,7 @@ for p in prof_list: draw_prof_personal_sheet( selected_prof = p, f_name = 'prof_
 for p in prof_list: draw_prof_personal_sheet( selected_prof = p, f_name = 'prof_'+p+'_by_group', color_by_group = 1 );
 for r in rooms: draw_prof_personal_sheet( selected_room = r, f_name = 'room_'+r+'_by_prof', color_by_prof = 1 );
 for r in rooms: draw_prof_personal_sheet( selected_room = r, f_name = 'room_'+r+'_by_group', color_by_group = 1 );
+for r in rooms: draw_prof_personal_sheet( selected_room = r, f_name = 'room_'+r );
 for g in groups: draw_prof_personal_sheet( selected_group = g, color_by_course = 1, f_name = 'group_'+g );
 
 # Нарисовать три образца расписания для отладки
