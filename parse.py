@@ -9,9 +9,10 @@ import re
 course_list = [ u'уирс', u'бола', u'спецтех1', u'мсс', u'ипк', u'пиивк', u'алгивк', u'цс сула', u'цс ивк', u'мио ивк']
 sem_start_re = re.compile( u'начало семестра: [0-9.]+' )
 sem_finish_re = re.compile( u'конец семестра: [0-9.]+' )
-prof_list = [ u'Белобжеский', u'Гуреев', u'Захарян', u'Костюков', u'Капырин', u'Новичков', u'Мингалиев', u'Нгуен', u'Соболев', u'Сурков', u'Ушаков', u'Мишин']
-prof_shorter = [ u'Белоб-\nжеский', u'Гуреев', u'Захарян', u'Костюков', u'Капырин', u'Нович-\nков', u'Минга-\nлиев', u'Нгуен', u'Соболев', u'Сурков', u'Ушаков', u'Мишин']
+prof_list = sorted([ u'Белобжеский', u'Гуреев', u'Захарян', u'Костюков', u'Капырин', u'Новичков', u'Нгуен', u'Соболев', u'Сурков', u'Ушаков', u'Мишин']) # u'Мингалиев',
+prof_shorter = sorted([ u'Белоб-\nжеский', u'Гуреев', u'Захарян', u'Костюков', u'Капырин', u'Нович-\nков', u'Нгуен', u'Соболев', u'Сурков', u'Ушаков', u'Мишин']) # u'Минга-\nлиев', 
 group_re = re.compile( u'[1-9,З][O,О,З,0,о,з][0-9]{3}[CСБМсбкиКИ]+' ) # 3О505С
+#group_re = re.compile( u'[M,C,O,М,С,О][1-9,З][O,О,З,0,о,з][0-9]{3}[CСБМсбкиКИ]+' ) # M3О505С
 time_re = re.compile(  u'[0-9]{1,2}:[0-9]{1,2}' )                     # 0:00   99:99
 week_span_re = [ re.compile( u'нед[0-9,]+$' ), \
                  re.compile( u'нед[0-9]+-[0-9]+' ), \
@@ -33,7 +34,7 @@ group_marker2 = re.compile( u'[1-9,З][O,О,З,0,о,з][0-9]{3}[CСБМсбки�
 month_names = [ u'янв', u'фев', u'мар', u'апр', u'мая', u'июн', u'июл', u'авг', u'сен', u'окт', u'ноя', u'дек' ]
 
 from matplotlib import cm
-cmap = cm.get_cmap('Pastel1') # Spectral, hsv, 
+cmap = cm.get_cmap('gist_rainbow') # Spectral, hsv, Pastel1
 prof_colors = {'':'rgb(255, 255, 255)'}
 for i,prof in enumerate(sorted(prof_list)):
     prof_colors[prof] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(prof_list)-1) )[0:3] ]) + ')' # colors[i % len(colors)]
@@ -53,6 +54,12 @@ wday5 = [u'пятница', u'пя', u'пт', u'пят']
 wday6 = [u'суббота', u'сб', u'су', u'суб']
 wday7 = [u'воскресенье', u'вс', u'во', u'вос']
 wday_list = wday1 + wday2 + wday3 + wday4 + wday5 + wday6 + wday7
+#wday_color = ['#ff0000', '#ff0099', '#6600ff', '#0033ff', '#009999', '#00ff66' ]
+wday_color = ['#000000' for nw in wday_list]
+#cmap = cm.get_cmap('Pastel1') # Spectral, hsv, Paired, gist_rainbow, Spectral
+cmap = cm.get_cmap('hsv')
+for i,nw in enumerate(wday_list):
+    wday_color[i] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i)/(len(wday_list)) )[0:3] ]) + ')'
 
 #wdays = [u'Понедельник', u'Вторник', u'Среда', u'Четверг', u'Пятница', u'Суббота', u'Воскресенье']
 wdays = [u'Пн', u'Вт', u'Ср', u'Чт', u'Пт', u'Сб', u'Вс']
@@ -142,6 +149,7 @@ def tag_me( s ):
       elif s.lower() in wday6: tag = ('wday', 5)
       elif s.lower() in wday7: tag = ('wday', 6)
   if group_re.match(s) or group_span.match( s.lower() ): tag = ('group_list', groupstring2list( s ))
+  #if group_re.match(s) : tag = ('group_list', s )
   if time_re.match(s): tag = ('time', timedelta( hours=int(s.split(':')[0]), minutes=int(s.split(':')[1]) ) )
   if s.lower().replace('.','') in class_type:
       if s.lower().replace('.','') in class_type_lab: tag = ('class_type', ct_marker_LAB )
@@ -428,9 +436,15 @@ def draw_prof_presence_list( fn='prof_list.svg' ):
     
     txt_style_0  = 'font-family:Sans;font-size:6px;text-anchor:middle;dominant-baseline:top'  # Надписи на блоках
     txt_style_0b = txt_style_0 + ';font-weight:bold'
+    txt_style_names = 'font-family:Sans;font-size:22px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
     txt_style_1  = 'font-family:Sans;font-size:20px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
-    txt_style_2  = 'font-family:Sans;font-size:16px;text-anchor:middle;dominant-baseline:top' # Блоки описания недели
+    txt_style_2  = 'font-family:Sans;font-size:18px;text-anchor:middle;dominant-baseline:top' # Блоки описания недели
     txt_style_2b =  txt_style_2 + ';font-weight:bold'
+    txt_style_4  = 'font-family:Sans;font-size:24px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
+    txt_style_4b = txt_style_4 + ';font-weight:bold'
+    txt_style_5  = 'font-family:Sans;font-size:22px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
+    txt_style_5b = txt_style_5 + ';font-weight:bold'
+    
     txt_style_3  = 'font-family:Sans;font-size:48px;text-anchor:middle;dominant-baseline:top' # Дни недели
     
     #T = [ {'L':[ list() for w in wdays[:-1] ], 'n':0} for p in prof_list ]
@@ -438,30 +452,60 @@ def draw_prof_presence_list( fn='prof_list.svg' ):
     for np,p in enumerate( prof_list ):
         for nw,w in enumerate( wdays[:-1] ):
             T[np][nw] = list( [ {'L':list(), 'ud':set()} for t in time_spans ] )
-    
+
     # Наполнить таблицу
-    # Проблема с repeat
+    rooms = set(); courses = set(); groups_list = set();
     n_stripes_per_prof = [ 0 for p in prof_list ]
     n_spans_in_week = [ 1 for w in wdays[:-1] ]
-    n_spans_in_timeslot = [ [1 for t in time_spans] for w in wdays[:-1] ]
+    n_spans_in_timeslot = [ [2 for t in time_spans] for w in wdays[:-1] ]
     for component in cal.walk():
-        if component.name == "VEVENT" and component['prof'] in prof_list and component['type'] in [ct_marker_PZ, ct_marker_LK] and component['first'] == 1:
+        if component.name == "VEVENT" and component['prof'] in prof_list and \
+                component['type'] in [ct_marker_PZ, ct_marker_LK] and component['first'] == 1:
+            rooms.add( component['location'] ); groups_list.add( component['group'] ); courses.add( component['course']);
+
             st = component.get('dtstart'); ft = component.get('dtend'); prof = component.get('prof');
             np = prof_list.index( prof ); nts = time_spans.index( component['dtstart'].time() ); nw = st.weekday();
             #print st, nts
-            T[np][nw][nts]['L'].append( component )
-            T[np][nw][nts]['ud'].add( component['updown'] ) # up, dn, updn
-            n_stripes_per_prof[np] = max( n_stripes_per_prof[np], len(T[np][nw][nts]['L']))
-            if len(T[np][nw][nts]['ud']) == 1 and 'updn' in T[np][nw][nts]['ud'] and n_spans_in_timeslot[nw][nts] < 2: n_spans_in_timeslot[nw][nts] = 1;
-            else: n_spans_in_timeslot[nw][nts] = 2
+            if len( [x for x in T[np][nw][nts]['L'] if x['updown'] == component['updown']] ) > 0:
+                # не добавляем такой компонент
+                continue;
+            else:
+                T[np][nw][nts]['L'].append( component )
+                T[np][nw][nts]['ud'].add( component['updown'] ) # up, dn, updn
+                n_stripes_per_prof[np] = max( n_stripes_per_prof[np], len(T[np][nw][nts]['L']))
+            #if len(T[np][nw][nts]['ud']) == 1 and 'updn' in T[np][nw][nts]['ud'] and n_spans_in_timeslot[nw][nts] < 2:
+            #    n_spans_in_timeslot[nw][nts] = 1;
+            #else: n_spans_in_timeslot[nw][nts] = 2
+
+
+    # Раскраска -------------------------------------
+
+    room_colors = {'':'white'}
+    course_colors = {'':'white'}
+    groups_colors = {'':'white'}
+
+    #cmap = cm.get_cmap('Pastel1') # Spectral, hsv, Paired, gist_rainbow
+    cmap = cm.get_cmap('Spectral')
+    if len(rooms) > 0:
+        for i,room in enumerate(sorted(rooms)): room_colors[room] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(rooms)) )[0:3] ]) + ')'
+    if len(courses) > 0:
+        for i,course in enumerate(sorted(courses)): course_colors[course] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(courses)) )[0:3] ]) + ')'
+    if len( groups_list ) > 0:
+        for i,groups in enumerate( sorted(groups_list) ): groups_colors[groups] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(groups_list)) )[0:3] ]) + ')'
+
+    # -----------------------------------------------
+
+
     n_spans_in_week = [ sum( n_spans_in_timeslot[nw] ) for nw,_ in enumerate(wdays[:-1]) ]
     
     nb_columns = len( prof_list )
     nb_rows = sum( n_spans_in_week ) # len( wdays ) * (len( time_spans ))
-    
-    col_w = 120; row_h = 40; rxy = 8; col_space = 10; row_space = 5; col_skip = 10; row_skip = 20; top_space = 100; left_space = 200;
+
+    col_w = 170; row_h = 40; rxy = 0; col_space = 0; row_space = 0; col_skip = 0; row_skip = 10; top_space = 80; left_space = 200;
     doc_w = left_space  +  nb_columns * (col_w + col_space)  +  (nb_columns - 1) * col_skip # +  (nb_columns - 2)*col_space;
-    doc_h = top_space  + (len(wdays)-2) * row_skip  +  (len(wdays)-1) * (len(time_spans)+1) * row_space  +  nb_rows * row_h
+    event_type_box_width = 40;
+    wday_hat = 6;
+    doc_h = top_space  + (len(wdays)-2)*row_skip  +  (len(wdays)-1)*(len(time_spans)+1)*row_space  +  nb_rows*row_h
     
     import lxml.etree as etree
     doc = etree.Element('svg', width=str(doc_w), height=str(doc_h), version='1.1', xmlns='http://www.w3.org/2000/svg')
@@ -476,10 +520,13 @@ def draw_prof_presence_list( fn='prof_list.svg' ):
         x = left_space  +  nb_stripes_before * (col_w + col_space)  +  nb_prof * col_skip
         y = 0
         p_strings = len( prof_shorter[nb_prof].split('\n') )
-        fill_stripe = "fill:#000000;fill-opacity:0.05" if ( nb_prof % 2 ) else "fill:#000000;fill-opacity:0.25"
-        etree.SubElement( doc, 'rect', x=str(x), y=str(0), width=str(w), height=str(doc_h), rx=str(rxy), ry=str(rxy), fill="rgba(254,254,254,0.8)", style=fill_stripe )
+        fill_stripe = "fill:#000000;fill-opacity:0.0;stroke:#000000;stroke-width:1"
+        #if ( nb_prof % 2 ): fill_stripe = "fill:#000000;fill-opacity:0.0;stroke:#000000;stroke-width:1"
+        #else: fill_stripe = "fill:#000000;fill-opacity:0.08;stroke:#000000;stroke-width:1"
+        # fill="rgba(254,254,254,0.8)",
+        etree.SubElement( doc, 'rect', x=str(x), y=str(0), width=str(w), height=str(doc_h), rx=str(rxy), ry=str(rxy), style=fill_stripe )
         etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
-        tx = etree.Element( 'text', x=str(x + w/2), y=str(y + h/2 - 22 - 12*(p_strings-1)), height = str(h), fill='black', style=txt_style_1 );
+        tx = etree.Element( 'text', x=str(x + w/2), y=str(y + h/2 - 22 - 12*(p_strings-1)), height = str(h), fill='black', style=txt_style_names );
         doc.append( tx )
         for t in prof_shorter[nb_prof].split('\n'):
             txx = etree.Element( 'tspan', x=str(x + w/2), dy = '1.4em' );
@@ -490,12 +537,19 @@ def draw_prof_presence_list( fn='prof_list.svg' ):
     for nw,wk in enumerate( wdays[:-1] ):
         nb_spans_before = sum( n_spans_in_week[:nw] )
         nb_spans_now    = n_spans_in_week[nw]
-        #nb_double_spans = n_spans_in_week[nw] - len(time_spans)
-        h = nb_spans_now * row_h   +  (len(time_spans)-1) * row_space  + 2 * row_space; #  +  nb_double_spans * row_space ################# 
-        w = 3*float(left_space)/5  -  col_skip/4
+
+        # Заголовок для недели
+        h = wday_hat
+        w = doc_w
         x = 0
         y = top_space  +  nw*row_skip  +  nb_spans_before * row_h   +   nw * (len(time_spans)+1) * row_space
-        etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(doc_w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill="rgba(254,254,254,0.8)", style="fill:#000000;fill-opacity:0.05" )
+        etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(doc_w), height=str(h), rx=str(rxy), stroke="black", style="fill:%s;fill-opacity:1" % wday_color[nw])        
+
+        h = nb_spans_now * row_h   +  (len(time_spans)-1) * row_space  + 2 * row_space; #  +  nb_double_spans * row_space ################# 
+        w = 2*float(left_space)/5  -  col_skip/4
+        x = 0
+        y = y + wday_hat
+        etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(doc_w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill="rgba(254,254,254,0.8)", style="fill:#000000;fill-opacity:0" )
         etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(w),     height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
         tx = etree.Element( 'text', x=str(x + w/2), y=str(y + h/2 + 24),  fill='black', style=txt_style_3 ); tx.text = wk; doc.append( tx )
         
@@ -505,16 +559,34 @@ def draw_prof_presence_list( fn='prof_list.svg' ):
             #nb_slots_before = sum( [ n_spans_in_week[nwl]['n'] for nwl,wl in enumerate(n_spans_in_week) if nwl < nw ] )
             nb_slots_now    = n_spans_in_timeslot[nw][nb_timeslot]
             w = 2*float(left_space)/5 - col_skip
-            x = 3*float(left_space)/5 + col_skip/2
+            x = 2*float(left_space)/5 + col_skip/2
             h = nb_slots_now * row_h # + (nb_slots_now - 1) * row_space
             # Полоска
             etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(doc_w - x - col_space), height=str(nb_slots_now*row_h), \
-                rx=str(rxy), ry=str(rxy), fill='white', style='fill:#ffffff;fill-opacity:0.8' )
+                rx=str(rxy), ry=str(rxy), fill='white', style='fill:#ffffff;fill-opacity:0.0;;stroke:#000000;stroke-width:1' )
 #               style='stroke:#606060;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:4,4;stroke-dashoffset:0;fill:#ffffff;fill-opacity:0.5'
 
+            # Время начала
             etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
-            tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 + 8), fill='black', style=txt_style_2 );  tx.text = u'%d:%02d' %(timeslot.hour, timeslot.minute); doc.append( tx )
+            tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 - 4), fill='black', style=txt_style_2 );  tx.text = u'%d:%02d' %(timeslot.hour, timeslot.minute); doc.append( tx )
+            # Время окончания
+            dummydate = datetime(1, 1, 1, timeslot.hour, timeslot.minute, timeslot.second)
+            timeslot_end = dummydate + timedelta( hours=1, minutes=30 );
+            tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 + 20), fill='black', style=txt_style_2 );  tx.text = u'%d:%02d' %(timeslot_end.hour, timeslot_end.minute); doc.append( tx )
+            
+
+            # Верхняя и нижняя недели
+            w = float(left_space)/5 - col_skip
+            x = 4*float(left_space)/5 + col_skip/2
+            h = row_h
+            etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
+            tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 + 8), fill='black', style=txt_style_2 );  tx.text = u'в.н'; doc.append( tx )
+            y2 = y1 + row_h;
+            etree.SubElement( doc, 'rect', x=str(x), y=str(y2), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='#aaaaaa')
+            tx = etree.Element( 'text', x=str(x + w/2), y=str(y2 + h/2 + 8), fill='white', style=txt_style_2 );  tx.text = u'н.н'; doc.append( tx )
+
             y1 += nb_slots_now * row_h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space
+
     
     # Занятия
     for np,Tpr in enumerate(T):
@@ -529,30 +601,55 @@ def draw_prof_presence_list( fn='prof_list.svg' ):
             nb_spans_now    = n_spans_in_week[nw]
             #nb_double_spans = n_spans_in_week[nw] - len(time_spans)
             #y0 = top_space  +  nw * row_skip  +  nb_spans_before * (row_space + row_h)  +  row_space
-            y0 = top_space  +  nw*row_skip  +  nb_spans_before * row_h   +   nw * (nts+1) * row_space  + row_space  +  nw * row_space
+            y0 = top_space  +  nw*row_skip  +  wday_hat  +  nb_spans_before * row_h   +   nw * (nts+1) * row_space  + row_space  +  nw * row_space
             for nts,Tt in enumerate( Twd ):
                 if len( Tt['L'] ) > 0:
                     nb_slots_before = sum( n_spans_in_timeslot[nw][:nts] )
                     nb_slots_now    = n_spans_in_timeslot[nw][nts]
                     x1 = x0
-                    y1 = y0  +  nb_slots_before * row_h   +  nts * row_space
+                    y1 = y0  +  nb_slots_before * row_h  +  nts * row_space
                     fill_color = 'rgb(255, 255, 230)'
                     for i,evt in enumerate( Tt['L'] ):
                         y2 = y1
                         #print nb_slots_now, evt['updown']
                         h = nb_slots_now * row_h
                         # Серый фон с пунктиром
-                        if evt['updown'] in ['up','dn'] and nb_slots_now==2  and not ('up' in T[np][nw][nts]['ud'] and 'dn' in T[np][nw][nts]['ud'] ) :
-                            etree.SubElement( doc, 'rect', x=str(x1), y=str(y1), width=str(col_w), height=str(2*row_h), \
-                                rx=str(row_h/3), ry=str(row_h/3), stroke="rgb(20,20,20)", fill='white', \
-                                style='fill:rgb(255,255,255);fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:8,8;stroke-dashoffset:0' )
-                        if evt['updown'] == 'up': h = row_h; fill_color = 'rgb(180, 255, 140)';
-                        if evt['updown'] == 'dn': h = row_h; y2 = y1 + row_h; fill_color = 'rgb(255, 220, 150)';
+                        #if evt['updown'] in ['up','dn'] and nb_slots_now==2  and not ('up' in T[np][nw][nts]['ud'] and 'dn' in T[np][nw][nts]['ud'] ) :
+                        #    etree.SubElement( doc, 'rect', x=str(x1), y=str(y1), width=str(col_w), height=str(2*row_h), \
+                        #        stroke="rgb(20,20,20)", fill='white', \
+                        #        #rx=str(row_h/3), ry=str(row_h/3), 
+                        #        #style='fill:rgb(255,255,255);fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:8,8;stroke-dashoffset:0' )
+                        #        style='fill:rgb(255,255,255);stroke:#000000;stroke-width:1' )
+                        # Изменения в стиле
+                        #if evt['group'] in groups_colors.keys(): fill_color = groups_colors[ evt['group'] ]
+                        #if evt['location'] in room_colors.keys(): fill_color = room_colors[ evt['location'] ]
+                        if evt['prof'] in prof_colors.keys(): fill_color = prof_colors[ evt['prof'] ]
+
+                        if evt['updown'] == 'up': h = row_h;
+                        if evt['updown'] == 'dn': h = row_h; y2 = y1 + row_h;
                         dx = dy = 0 # -5 * (len(Tt['L']) - i - 1)
-                        etree.SubElement( doc, 'rect', x=str(x1 + dx), y=str(y2 + dy), width=str(col_w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill=fill_color )
-                        #tx = etree.Element( 'text', x=str(x1 + col_w/2 + dx), y=str(y2 + h/2 + dy + 6), fill='black', style=txt_style_2 );  tx.text = evt['group']; doc.append( tx )
-                        tx = etree.Element( 'text', x=str(x1 + col_w/2 + dx), y=str(y2 + h/2 - 4), fill='black', style=txt_style_2 );  tx.text = evt['group']; doc.append( tx )
-                        tx = etree.Element( 'text', x=str(x1 + col_w/2 + dx), y=str(y2 + h/2 + 15), fill='black', style=txt_style_2b );  tx.text = evt['location']; doc.append( tx )
+
+                        # Лекция или практика
+                        w = event_type_box_width
+                        if evt['type'] == ct_marker_PZ:
+                            etree.SubElement( doc, 'rect', x=str(x1), y=str(y2), width=str(w), height=str(h), style='fill:#cc0000;fill-opacity:1;stroke:#000000;stroke-width:1' )
+                            tx = etree.Element( 'text', x=str(x1 + w/2 + dx), y=str(y2 + h/2 + 8), fill='white', style=txt_style_5b );  tx.text = evt['type']; doc.append( tx )
+                        else:
+                            etree.SubElement( doc, 'rect', x=str(x1), y=str(y2), width=str(w), height=str(h), style='fill:#00aa99;fill-opacity:1;stroke:#000000;stroke-width:1' )
+                            tx = etree.Element( 'text', x=str(x1 + w/2 + dx), y=str(y2 + h/2 + 8), fill='white', style=txt_style_5b );  tx.text = evt['type']; doc.append( tx )
+                        # Коробка события
+                        x2 = x1 + event_type_box_width
+                        w = col_w - event_type_box_width
+                        etree.SubElement( doc, 'rect', x=str(x2 + dx), y=str(y2 + dy), width=str(w), height=str(h), style='fill:%s;fill-opacity:0.1;stroke:#000000;stroke-width:1' % fill_color )
+                        #                              rx=str(rxy), ry=str(rxy), 
+                        #tx = etree.Element( 'text', x=str(x2 + w/2 + dx), y=str(y2 + h/2 + dy + 6), fill='black', style=txt_style_2 );  tx.text = evt['group']; doc.append( tx )
+                        # Надписи на событии
+                        if evt['updown'] == 'updn':
+                            tx = etree.Element( 'text', x=str(x2 + w/2 + dx), y=str(y2 + h/2 - 6), fill='black', style=txt_style_4 );  tx.text = evt['group']; doc.append( tx )
+                            tx = etree.Element( 'text', x=str(x2 + w/2 + dx), y=str(y2 + h/2 + 25), fill='black', style=txt_style_4b );  tx.text = evt['location']; doc.append( tx )
+                        else:
+                            tx = etree.Element( 'text', x=str(x2 + w/2 - 26), y=str(y2 + h/2 + 7), fill='black', style=txt_style_2 );  tx.text = evt['group']; doc.append( tx )
+                            tx = etree.Element( 'text', x=str(x2 + w/2 + 36), y=str(y2 + h/2 + 7), fill='black', style=txt_style_2b );  tx.text = evt['location']; doc.append( tx )
 
     f = open('out/%s' % fn, 'w')
     f.write( '<?xml version=\"1.0\" standalone=\"no\"?>\n' )
@@ -572,16 +669,19 @@ def draw_prof_presence_list( fn='prof_list.svg' ):
 # Если больше одного занятия в клетке, уменьшить ширину окна для данного занятия (при той же длине)
 #    перекрывающиеся занятия будут находиться рядом
 def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group = '', selected_course = '', \
-                              color_by_course = 0, color_by_room=0, color_by_prof=0, color_by_group=0, f_name = 'sample' ):
+                              color_by_course = 0, color_by_room=0, color_by_prof=0, color_by_group=0, f_name = 'sample',
+                              draw_every_timeslot = 0 ):
     
     txt_style_0  = 'font-family:Sans;font-size:6px;text-anchor:middle;dominant-baseline:top'  # Надписи на блоках
     txt_style_0b = txt_style_0 + ';font-weight:bold'
-    txt_style_1  = 'font-family:Sans;font-size:20px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
+    txt_style_1  = 'font-family:Sans;font-size:14px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
     txt_style_2  = 'font-family:Sans;font-size:14px;text-anchor:middle;dominant-baseline:middle' # Блоки описания недели
     txt_style_2b =  txt_style_2 + ';font-weight:bold'
+    txt_style_2bsm  = txt_style_2b.replace( 'font-size:14px;', 'font-size:12px;' )
+    txt_style_2bsm2  = txt_style_2b.replace( 'font-size:14px;', 'font-size:10px;' )
     txt_style_2sm  = txt_style_2.replace( 'font-size:14px;', 'font-size:10px;' )
     txt_style_2smm = txt_style_2.replace( 'font-size:14px;', 'font-size:8px;' )
-    txt_style_3  = 'font-family:Sans;font-size:48px;text-anchor:middle;dominant-baseline:top' # Дни недели
+    txt_style_3  = 'font-family:Sans;font-size:32px;text-anchor:middle;dominant-baseline:top' # Дни недели
     
     nb_weeks = (sem_finish + timedelta(days = 7-sem_finish.weekday()) - (sem_start - timedelta(days = sem_start.weekday()) )).days / 7
     
@@ -594,13 +694,24 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
     # Заполнить таблицу
     n_timeslots_in_weekday = [[ 0 for nts in time_spans ] for wd in wdays[:-1]]
     n_timeslots_in_weekday_set = [ set() for wd in wdays[:-1]]
+
+    # Если мы хотим чтобы в расписании находились все временные отрезки, а не только занятые парами
+    if draw_every_timeslot > 0:
+        for nwd,_ in enumerate( wdays[:-1] ):
+            if draw_every_timeslot == 1: # Рисовать все временные окна
+                for nts,timeslot in enumerate( time_spans ):
+                    n_timeslots_in_weekday_set[nwd].add( timeslot );
+            if draw_every_timeslot == 2: # Только дневные временные окна
+                for nts,timeslot in enumerate( time_spans[:-2] ):
+                    n_timeslots_in_weekday_set[nwd].add( timeslot );
+
     n_timeslots_in_weekday_len = [ dict() for wd in wdays[:-1]]
     
     # Заготовки для расцветки
     room_colors = {'':'white'}
     course_colors = {'':'white'}
     groups_colors = {'':'white'}
-    rooms = set(''); courses = set(''); groups_list = set('');
+    rooms = set(); courses = set(); groups_list = set();
 
     for component in cal.walk():
         if component.name == "VEVENT" and \
@@ -614,6 +725,7 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
             timeslot = component['dtstart'].time(); nts = time_spans.index( timeslot );
             T[nw][nwd][nts].append( component )
             # Сколько в каждом дне недели будет временных отрезков (вспомогательная часть)
+            #if draw_every_timeslot == 0:
             n_timeslots_in_weekday_set[nwd].add( timeslot )
             # event_length = (et - st).minutes
             event_length = 2 if component['type'] == ct_marker_LAB else 1;
@@ -621,9 +733,12 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
             if component['type'] == ct_marker_LAB: n_timeslots_in_weekday_set[nwd].add( time_spans[nts+1] )
 
     cmap = cm.get_cmap('Pastel1') # Spectral, hsv, Paired, gist_rainbow
-    for i,room in enumerate(sorted(rooms)): room_colors[room] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(rooms)) )[0:3] ]) + ')'
-    for i,course in enumerate(sorted(courses)): course_colors[course] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(courses)) )[0:3] ]) + ')'
-    for i,groups in enumerate( sorted(groups_list) ): groups_colors[groups] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(groups_list)) )[0:3] ]) + ')'
+    if len(rooms) > 0:
+        for i,room in enumerate(sorted(rooms)): room_colors[room] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(rooms)) )[0:3] ]) + ')'
+    if len(courses) > 0:
+        for i,course in enumerate(sorted(courses)): course_colors[course] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(courses)) )[0:3] ]) + ')'
+    if len( groups_list ) > 0:
+        for i,groups in enumerate( sorted(groups_list) ): groups_colors[groups] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(groups_list)) )[0:3] ]) + ')'
     
     # Сколько временных отрезков должно быть нарисовано в каждый день недели
     n_timeslots_in_weekday_sum = [ sum( 1 for n in n_timeslots_in_weekday_set[nwd] ) for nwd,_ in enumerate( wdays[:-1] ) ]
@@ -633,7 +748,7 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
     nb_rows = sum(n_timeslots_in_weekday_min)
     nb_timespans = sum(n_timeslots_in_weekday_min)
     
-    col_w = 50; row_h = 40; rxy = 5; col_space = 10; row_space = 5; col_skip = 5; row_skip = 20; top_space = 70; left_space = 200; date_space = 16;
+    col_w = 50; row_h = 40; rxy = 5; col_space = 10; row_space = 5; col_skip = 5; row_skip = 20; top_space = 40; left_space = 110; date_space = 16;
     doc_w = left_space  +  nb_columns * col_w  +  (nb_columns - 1)*col_space
 
     expected_h = doc_w * 210 / 297; # Соотношение сторон как у листа A4
@@ -691,7 +806,6 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
             etree.SubElement( doc, 'rect', x=str(xd+1), y=str(yd), width=str(col_w-2), height=str(date_space), rx=str(date_space/2), ry=str(date_space/2), stroke="lightgrey", fill='white')
             tx = etree.Element( 'text', x=str(xd + col_w/2), y=str(yd + date_space/2 + 5), fill='black', style=txt_style_2 );  tx.text = ds; doc.append( tx )
 
-        
         # Временные отрезки
         y1 = y + row_space + date_space + row_space
         for nb_timeslot,timeslot in enumerate( sorted( n_timeslots_in_weekday_set[nwd] ) ):
@@ -739,9 +853,15 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
                     # Второй раз -- чтобы текст был поверх прямоугольников
                     for nev,evt in enumerate( T[nw][nwd][nts] ):
                         labels = []; shift = []; style = [];
-                        if selected_course == '': labels.append( evt['course']   ); style.append( txt_style_2b );  shift.append(0);
-                        if selected_group == '':  labels.append( evt['group']    ); style.append( txt_style_2sm ); shift.append(0);
-                        if selected_room == '':   labels.append( evt['location'] ); style.append( txt_style_2 );   shift.append(0);
+                        if selected_course == '': labels.append( evt['course']   );  shift.append(-1.5); # 0
+
+                        style.append( txt_style_2sm )
+                        #if len( evt['course'] ) >= 6: style.append( txt_style_2bsm2 );
+                        #elif len( evt['course'] ) == 5: style.append( txt_style_2bsm );
+                        #else: style.append( txt_style_2b );
+
+                        if selected_group == '':  labels.append( evt['group']    ); style.append( txt_style_2bsm2 ); shift.append(-1.5); # 0
+                        if selected_room == '':   labels.append( evt['location'] ); style.append( txt_style_2sm );  shift.append(-1);
                         if selected_prof == '':   labels.append( evt['prof']     ); style.append( txt_style_2smm ); shift.append(0);
                         n_str = float(len( labels ))
                         
@@ -773,13 +893,21 @@ def draw_prof_personal_sheet( selected_prof='', selected_room='', selected_group
 
 
 
-rooms = set( e['location'] for e in cal.walk() if e.name == "VEVENT" )
+rooms = set( e['location'] for e in cal.walk() if e.name == "VEVENT" and len(e['location']) != 0 )
 courses = set( e['course'] for e in cal.walk() if e.name == "VEVENT" and e['course'] != '' )
 cmap = cm.get_cmap('Set3') # Spectral, hsv, Paired, gist_rainbow
-for i,room in enumerate(sorted(rooms)): room_colors[room] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(rooms)-1) )[0:3] ]) + ')'
-for i,course in enumerate(sorted(courses)): course_colors[course] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(courses)-1) )[0:3] ]) + ')'
+
+if len(rooms) > 1:
+    for i,room in enumerate(sorted(rooms)): room_colors[room] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(rooms)-1) )[0:3] ]) + ')'
+if len(courses) > 1:
+    for i,course in enumerate(sorted(courses)): course_colors[course] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(courses)-1) )[0:3] ]) + ')'
 groups_lists = set( e['groups'] for e in cal.walk() if e.name == "VEVENT" )
-for i,groups in enumerate( sorted(groups_lists) ): groups_colors[groups] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(groups_lists)-1) )[0:3] ]) + ')'
+if len(groups_lists) > 1:
+    for i,groups in enumerate( sorted(groups_lists) ): groups_colors[groups] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(groups_lists)-1) )[0:3] ]) + ')'
+
+
+
+
 
 #all_groups = [gl.split(' ') for gl in groups_lists]
 #for gl in all_groups: print gl
@@ -798,13 +926,18 @@ for gl in groups_lists:
 # График присутствия по лекциям
 draw_prof_presence_list( fn='total_lec_list.svg' )
 
+
 # Нарисовать все расписания по группам, комнатам и преподавателям
-for p in prof_list: draw_prof_personal_sheet( selected_prof = p, f_name = 'prof_'+p+'_by_room', color_by_room = 1 );
+
 for p in prof_list: draw_prof_personal_sheet( selected_prof = p, f_name = 'prof_'+p+'_by_group', color_by_group = 1 );
+for p in prof_list: draw_prof_personal_sheet( selected_prof = p, f_name = 'prof_'+p+'_by_group_all_timeslots', color_by_group = 1, draw_every_timeslot=1 );
+#for p in prof_list: draw_prof_personal_sheet( selected_prof = p, f_name = 'prof_'+p+'_by_room', color_by_room = 1 );
+#for p in prof_list: draw_prof_personal_sheet( selected_prof = p, f_name = 'prof_'+p+'_by_group_all_day_timeslots', color_by_group = 1, draw_every_timeslot=2 );
+
 for r in rooms: draw_prof_personal_sheet( selected_room = r, f_name = 'room_'+r+'_by_prof', color_by_prof = 1 );
 for r in rooms: draw_prof_personal_sheet( selected_room = r, f_name = 'room_'+r+'_by_group', color_by_group = 1 );
 for r in rooms: draw_prof_personal_sheet( selected_room = r, f_name = 'room_'+r );
-for g in groups: draw_prof_personal_sheet( selected_group = g, color_by_course = 1, f_name = 'group_'+g );
+	#for g in groups: draw_prof_personal_sheet( selected_group = g, color_by_course = 1, f_name = 'group_'+g );
 
 # Нарисовать три образца расписания для отладки
 #p = prof_list[0];     draw_prof_personal_sheet( selected_prof = p, f_name = 'prof_'+p+'_by_room', color_by_room = 1 );
