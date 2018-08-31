@@ -228,100 +228,6 @@ def tag_me( s ):
 
 
 
-## Открыть и прочитать расписание
-#content = []
-#with open( 'src' ) as f:
-#    content = f.read().splitlines()
-#content = [ c for c in content if not (len(c) > 0 and c[0] == '#') ]
-#
-## Создаём новый календарь
-#cal = Calendar()
-#cal.add('version', '2.0')
-#cal.add('prodid', '-//test file//example.com//')
-#cal.add('X-WR-CALNAME','Test Calendar ' )
-#lt = LocalTimezone() # we append the local timezone to each time so that icalendar will convert to UTC
-#
-#event_counter = 0
-#modifiers = {}
-#default_modifiers = { 'class_type':ct_marker_LK, 'subject':u'', 'week_span':[int(x) for x in range(1,18)],\
-#                      'wday':0, 'prof':'', 'room':'', 'group_list':[], 'short_group':'', 'course':'' }
-#for i in content:
-#  s = i.decode( 'utf-8' ) #.replace('\n','').replace('\r','')
-#  # Обнулить словарь модификаторов если пустая строка
-#  if len(s) == 0: modifiers = {}
-#  else:
-#    tokens = s.split( u';' )
-#    if len(tokens) == 1:
-#      t = tag_me( s )
-#      if t[0] == 'sem_start':     sem_start = datetime.strptime( s.split(':')[1].strip(' '), '%d.%m.%Y' )
-#      elif t[0] == 'sem_finish':  sem_finish = datetime.strptime( s.split(':')[1].strip(' '), '%d.%m.%Y' ) + timedelta( days = 1 )
-#      elif t[0] == 'group_list':
-#          modifiers[ t[0] ] = t[1]
-#          modifiers[ 'short_group' ] = short_group_name( s.strip(u' ') )
-#      else: modifiers[ t[0] ] = t[1];
-#    elif len(tokens) > 1:
-#      
-#      rawinfo = {}    # fill event info
-#      for j in tokens:
-#          if j=='': continue;
-#          t = tag_me( j.strip(u' ') )
-#          rawinfo[t[0]] = t[1]
-#          if t[0] == 'group_list':
-#              modifiers[ t[0] ] = t[1]
-#              modifiers[ 'short_group' ] = short_group_name( j.strip(u' ') )
-#
-#      info = { 'id':event_counter }; event_counter = event_counter + 1
-#      # initialize with default values
-#      for k in default_modifiers.keys(): info[k] = default_modifiers[k]
-#      # merge with modifiers
-#      for k in modifiers.keys(): info[k] = modifiers[k]
-#      for k in rawinfo.keys():   info[k] = rawinfo[k]
-#
-#      #if info['group_list'] == '': print i
-#
-#      # add to calendar
-#      first_event = 1
-#      all_event_executions = [ sem_start + timedelta( days=7*(w-1) ) - timedelta( days = sem_start.weekday() ) + info['time'] + timedelta( days = info['wday'] ) for w in info['week_span'] ]
-#      
-#      for w in info['week_span']:
-#          # Определить длительность события
-#          if info['class_type'] == ct_marker_LAB: duration = timedelta( hours=3, minutes=10 );
-#          else: duration = timedelta( hours=1, minutes=30 );
-#          # Время начала и конца события
-#          start_datetime = sem_start + timedelta( days = 7*(w-1) ) - timedelta( days = sem_start.weekday() ) + info['time'] + timedelta( days = info['wday'] )
-#          finish_datetime = start_datetime + duration
-#          # Добавить событие в календарь
-#          if start_datetime > sem_start and finish_datetime < sem_finish :
-#              event = Event()
-#              event_name = info['class_type']
-#              if info['subject'] != '': event_name = info['subject'] + '(' + info['class_type'] + ')'
-#              if get_up_down_list( info['week_span'] ) == 'updn': repeat_interval = 1
-#              else: repeat_interval = 2
-#              if first_event: event['rrule'] = "FREQ=WEEKLY;INTERVAL=%d;COUNT=%d" % (repeat_interval, len(info['week_span']))
-#              #if first_event:
-#              #    event['rrule'] = rrule(WEEKLY, interval=repeat_interval, count=len(info['week_span']), dtstart=start_datetime ).to_ical
-#              
-#              event['updown'] = get_up_down_list( info['week_span'] )
-#              event['week_span_str'] = str(min(info['week_span'])) + '-' + str(max(info['week_span']))
-#              event['summary'] = info['course'] + '(%s,%s)' % (info['class_type'],info['short_group'])
-#              event['course'] = info['course']
-#              event['date_time_start'] = start_datetime
-#              event['dtstart'] = vDatetime(start_datetime).to_ical()
-#              event['date_time_end'] = finish_datetime
-#              event['dtend'] = vDatetime(finish_datetime).to_ical()
-#              event['id'] = info['id']
-#              event['prof'] = info['prof']
-#              event['location'] = info['room']
-#              event['group'] = info['short_group']
-#              event['groups'] = u' '.join( info['group_list'] )
-#              event['type'] = info['class_type']
-#              event['first'] = first_event
-#              #if first_event: event['list_of_executions'] = all_event_executions
-#              cal.add_component( event )
-#              first_event = 0
-#
-#
-
 
 #########################################################################
 # Процедура отрисовки индивидуальных листов преподавателей/комнат/групп #
@@ -483,7 +389,7 @@ def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = ''
                             tx.text = e['group']; doc.append( tx )
     
     # ElementTree 1.2 doesn't write the SVG file header errata, so do that manually
-    f = open( os.path.join(dst_dir_prefix, '%s.svg' % f_name), 'w')
+    f = open( os.path.join(dst_dir_prefix, '%s' % f_name), 'w')
     f.write( '<?xml version=\"1.0\" standalone=\"no\"?>\n' )
     f.write( '<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n' )
     f.write( '\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n' )
@@ -770,7 +676,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                             tx = etree.Element( 'text', x=str(x2 + w/2 - 30), y=str(y2 + h/2 + 7), fill='black', style=txt_style_2 );  tx.text = short_group_name(evt['group']); doc.append( tx )
                             tx = etree.Element( 'text', x=str(x2 + w/2 + 36), y=str(y2 + h/2 + 7), fill='black', style=txt_style_2b );  tx.text = short_room_name(evt['location']); doc.append( tx )
 
-    f = open( os.path.join(dst_dir_prefix, '%s.svg' % fn), 'w')
+    f = open( os.path.join('%s' % fn), 'w')
     f.write( '<?xml version=\"1.0\" standalone=\"no\"?>\n' )
     f.write( '<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n' )
     f.write( '\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n' )
@@ -1039,7 +945,7 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
             y1 += h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space    
     
 
-    f = open(os.path.join(dst_dir_prefix, '%s.svg' % f_name), 'w')
+    f = open(os.path.join(dst_dir_prefix, '%s' % f_name), 'w')
     f.write( '<?xml version=\"1.0\" standalone=\"no\"?>\n' )
     f.write( '<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n' )
     f.write( '\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n' )
@@ -1062,296 +968,6 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
 
         #img = qr.make_image( fill_color="black", back_color="white" )
         #img.save( u"%s.png" % selected_prof )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def draw_result( cal, selection=[], color_dict = {}, f_name = 'sample', draw_every_timeslot = 0 ):
-
-    txt_style_0  = 'font-family:Sans;font-size:6px;text-anchor:middle;dominant-baseline:top'  # Надписи на блоках
-    txt_style_0b = txt_style_0 + ';font-weight:bold'
-    txt_style_1  = 'font-family:Sans;font-size:14px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
-    txt_style_2  = 'font-family:Sans;font-size:14px;text-anchor:middle;dominant-baseline:middle' # Блоки описания недели
-    txt_style_22 = 'font-family:Sans;font-size:13px;text-anchor:middle;dominant-baseline:middle' # Блоки временных интервалов
-    txt_style_2b =  txt_style_2 + ';font-weight:bold'
-    txt_style_2bsm  = txt_style_2b.replace( 'font-size:14px;', 'font-size:12px;' )
-    txt_style_2bsm2  = txt_style_2b.replace( 'font-size:14px;', 'font-size:12px;' )
-    txt_style_2sm  = txt_style_2.replace( 'font-size:14px;', 'font-size:10px;' )
-    txt_style_2smm = txt_style_2.replace( 'font-size:14px;', 'font-size:8px;' )
-    txt_style_3  = 'font-family:Sans;font-size:32px;text-anchor:middle;dominant-baseline:top' # Дни недели
-    
-    nb_weeks = (sem_finish + timedelta(days = 7-sem_finish.weekday()) - (sem_start - timedelta(days = sem_start.weekday()) )).days / 7
-    
-    T = [ [ [ list() for nts,_ in enumerate( time_spans ) ] for w in wdays[:-1] ] for nw in range(0,nb_weeks) ]
-    for nw in range(0,nb_weeks):
-        for nwd,_ in enumerate( wdays[:-1] ):
-            for nts,_ in enumerate( time_spans ):
-                T[nw][nwd][nts] = list()
-    
-    # Заполнить таблицу
-    n_timeslots_in_weekday = [[ 0 for nts in time_spans ] for wd in wdays[:-1]]
-    n_timeslots_in_weekday_set = [ set() for wd in wdays[:-1]]
-
-    # Если мы хотим чтобы в расписании находились все временные отрезки, а не только занятые парами
-    if draw_every_timeslot > 0:
-        for nwd,_ in enumerate( wdays[:-1] ):
-            if draw_every_timeslot == 1: # Рисовать все временные окна
-                for nts,timeslot in enumerate( time_spans ):
-                    n_timeslots_in_weekday_set[nwd].add( timeslot );
-            if draw_every_timeslot == 2: # Только дневные временные окна
-                for nts,timeslot in enumerate( time_spans[:-2] ):
-                    n_timeslots_in_weekday_set[nwd].add( timeslot );
-
-    n_timeslots_in_weekday_len = [ dict() for wd in wdays[:-1]]
-    
-    # Заготовки для расцветки
-    room_colors = {'':'white'}
-    course_colors = {'':'white'}
-    groups_colors = {'':'white'}
-    rooms = set(); courses = set(); groups_list = set();
-
-    selected_events = []
-    for component in cal.walk():
-      #if component in selected_events: continue; # Не будем дважды добавлять одно событие
-      for sel in selection:
-      	tag = tag_me(sel)[0]
-        if component.name == "VEVENT" and component[ tag ] == sel:
-            selected_events.append(sel)
-            #    ( selected_prof == '' or component['prof'] == selected_prof ) and \
-            #    ( selected_room == '' or component['location'] == selected_room ) and \
-            #    ( selected_group == '' or selected_group in component['groups'].split(' ') ):
-            #    #component['type'] == ct_marker_LAB and \
-            rooms.add( component['location'] ); groups_list.add( component['group'] ); courses.add( component['course']);
-            
-            st = datetime.strptime( component['date_time_start'], '%Y-%m-%d %H:%M:%S');
-            ud = component.get('updown'); nwd = st.weekday();
-
-            rrset = rrule.rruleset()
-            rrset.rrule( rrule.rrulestr( component.get('rrule').to_ical(), dtstart = st ) )
-            #rr = rrule.rrule(freq=rrule.HOURLY, dtstart=dtstart, until=dtuntil)
-            for evt in list(rrset):
-              if evt > sem_finish: continue;
-              nw = (( evt + timedelta(days = 7-evt.weekday()) - (sem_start - timedelta(days = sem_start.weekday()) ))).days / 7 - 1      # ?-1
-              timeslot = evt.time(); nts = time_spans.index( timeslot );
-              T[nw][nwd][nts].append( component )
-              # Сколько в каждом дне недели будет временных отрезков (вспомогательная часть)
-              #if draw_every_timeslot == 0:
-              n_timeslots_in_weekday_set[nwd].add( timeslot )
-              # event_length = (et - st).minutes
-              event_length = 2 if component['type'] == ct_marker_LAB else 1;
-              n_timeslots_in_weekday_len[nwd][timeslot] = event_length
-              if component['type'] == ct_marker_LAB: n_timeslots_in_weekday_set[nwd].add( time_spans[nts+1] )
-
-    cmap = cm.get_cmap('Pastel1') # Spectral, hsv, Paired, gist_rainbow
-    if len(rooms) > 0:
-        for i,room in enumerate(sorted(rooms)): room_colors[room] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(rooms)) )[0:3] ]) + ')'
-    if len(courses) > 0:
-        for i,course in enumerate(sorted(courses)): course_colors[course] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(courses)) )[0:3] ]) + ')'
-    if len( groups_list ) > 0:
-        for i,groups in enumerate( sorted(groups_list) ): groups_colors[groups] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(groups_list)) )[0:3] ]) + ')'
-    
-    # Сколько временных отрезков должно быть нарисовано в каждый день недели
-    n_timeslots_in_weekday_sum = [ sum( 1 for n in n_timeslots_in_weekday_set[nwd] ) for nwd,_ in enumerate( wdays[:-1] ) ]
-    n_timeslots_in_weekday_min = [ max( 1,n ) for n in n_timeslots_in_weekday_sum ]
-    
-    nb_columns = nb_weeks
-    nb_rows = sum(n_timeslots_in_weekday_min)
-    nb_timespans = sum(n_timeslots_in_weekday_min)
-    
-    col_w = 50; row_h = 40; rxy = 5; col_space = 4; row_space = 5; col_skip = 5; row_skip = 20; top_space = 40; left_space = 110; date_space = 16;
-    doc_w = left_space  +  nb_columns * col_w  +  (nb_columns - 1)*col_space
-
-    expected_h = doc_w * 210 / 297; # Соотношение сторон как у листа A4
-    row_h = (expected_h - top_space - (len(wdays)-2) * row_skip  -  (nb_timespans + (len(wdays)-1)) * row_space  - (len(wdays) - 1)*(date_space + row_space)) / nb_rows
-    if row_h < 30: # row_h = 30;
-        expected_h = doc_w * 297 / 210; # Портретная ориентация
-        row_h = (expected_h - top_space - (len(wdays)-2) * row_skip  -  (nb_timespans + (len(wdays)-1)) * row_space  - (len(wdays) - 1)*(date_space + row_space)) / nb_rows
-    doc_h = top_space  + (len(wdays)-2) * row_skip  +  (nb_timespans + (len(wdays)-1)) * row_space  +  nb_rows * row_h  +  (len(wdays) - 1)*(date_space + row_space)
-    
-    import lxml.etree as etree
-    doc = etree.Element('svg', width=str(doc_w), height=str(doc_h), version='1.1', xmlns='http://www.w3.org/2000/svg')
-    etree.SubElement( doc, 'rect', x=str(0), y=str(0), width=str(doc_w), height=str(doc_h), fill="white") # Белый фон
-
-    tx = etree.Element( 'text', x=str(left_space/2), y=str(top_space/2 + 8), height = str(top_space), width=str(left_space), fill='black', style=txt_style_1 );
-    tx.text = u''
-    #if selected_prof != '': tx.text += selected_prof
-    #if selected_room != '': tx.text += selected_room
-    #if selected_group != '': tx.text += selected_group
-    #if selected_course != '': tx.text += selected_course
-    #tx.text += selected_prof
-    tx.text += sel
-    doc.append( tx )
-    
-    # Номера недель
-    for nw in range(0,nb_weeks):
-        w = col_w
-        h = top_space - row_skip
-        x = left_space  +  nw * (col_w + col_space)
-        y = 0
-        #fill_stripe = "fill:#000000;fill-opacity:0.05" if ( nw % 2 ) else "fill:#000000;fill-opacity:0.15"
-        fill_stripe = "fill:#000000;fill-opacity:0.00" if ( nw % 2 ) else "fill:#000000;fill-opacity:0.05"
-        etree.SubElement( doc, 'rect', x=str(x), y=str(0), width=str(w), height=str(doc_h), rx=str(rxy), ry=str(rxy), fill="rgba(254,254,254,0.8)", style=fill_stripe )
-        etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
-        tx = etree.Element( 'text', x=str(x + w/2), y=str(y + h/2 + 8), height = str(h), fill='black', style=txt_style_1 ); tx.text = str(nw+1); doc.append( tx )
-
-    # Названия дней недели
-    for nwd,wkd in enumerate( wdays[:-1] ):
-        nb_spans_before = sum( n_timeslots_in_weekday_min[:nwd] )
-        nb_timeslots_before = sum( n_timeslots_in_weekday_min[:nwd] )
-        #len_spans_before = sum( n_timeslots_in_weekday_len_sum[:nwd] )
-        nb_spans_now     = n_timeslots_in_weekday_min[nwd]
-        nb_timeslots_now = n_timeslots_in_weekday_min[nwd]
-        h = nb_spans_now * row_h   +  (nb_timeslots_now + 1) * row_space  +  row_space  + date_space
-        w = 3*float(left_space)/5  -  col_skip/4
-        x = 0
-        y = top_space  +  nwd*(row_skip + row_space + date_space)  +  nb_spans_before * row_h   +   (nb_timeslots_before + nwd) * row_space
-        etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(doc_w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill="rgba(254,254,254,0.8)", style="fill:#000000;fill-opacity:0.05" )
-        etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(w),     height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
-        tx = etree.Element( 'text', x=str(x + w/2), y=str(y + h/2 + 18),  fill='black', style=txt_style_3 ); tx.text = wkd; doc.append( tx )
-
-        # Скруглённые прямоугольники с текущей датой
-        for nw in range(0,nb_weeks):
-            dt = (sem_start + timedelta(days = -sem_start.weekday() + nw*7 + nwd)  ).date()
-            ds = dt.strftime("%d.%m")
-            yd = y + row_space
-            xd = left_space  +  nw * (col_w + col_space)
-            # С запасом по ширине +- 1 единица
-            etree.SubElement( doc, 'rect', x=str(xd+1), y=str(yd), width=str(col_w-2), height=str(date_space), rx=str(date_space/2), ry=str(date_space/2), stroke="lightgrey", fill='white')
-            tx = etree.Element( 'text', x=str(xd + col_w/2), y=str(yd + date_space/2 + 5), fill='black', style=txt_style_2 );  tx.text = ds; doc.append( tx )
-
-        # Временные отрезки
-        y1 = y + row_space + date_space + row_space
-        for nb_timeslot,timeslot in enumerate( sorted( n_timeslots_in_weekday_set[nwd] ) ):
-            nts = time_spans.index( timeslot );
-            w = 2*float(left_space)/5 - col_skip
-            x = 3*float(left_space)/5 + col_skip/2
-            h = row_h
-            # Полоска
-            etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(doc_w - x), height=str(h), rx=str(rxy), ry=str(rxy), fill='white', style='fill:#ffffff;fill-opacity:0.5' )
-            etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
-            #tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 + 8), fill='black', style=txt_style_2 );  tx.text = u'%d:%02d' %(timeslot.hour, timeslot.minute); doc.append( tx )
-
-            # Время начала
-            etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
-            tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 - 3), fill='black', style=txt_style_22 );  tx.text = u'%d:%02d' %(timeslot.hour, timeslot.minute); doc.append( tx )
-            # Время окончания
-            dummydate = datetime(1, 1, 1, timeslot.hour, timeslot.minute, timeslot.second)
-            timeslot_end = dummydate + timedelta( hours=1, minutes=30 );
-            tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 + 12), fill='black', style=txt_style_22 );  tx.text = u'%d:%02d' %(timeslot_end.hour, timeslot_end.minute); doc.append( tx )
-            
-            y1 += h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space
-
-        y1 = y + row_space + date_space + row_space
-        # События на этом отрезке (должны быть поверх всех отрезков)
-        for nb_timeslot,timeslot in enumerate( sorted( n_timeslots_in_weekday_set[nwd] ) ):
-            nts = time_spans.index( timeslot );
-            for nw in range(0,nb_weeks):
-                #this_slot_events = T[nw][nwd][nts]
-                d_ev_nb = 0
-                x_skip = 0
-                # Если в этом слоте есть лабораторные, добавить к количеству событий события следующего слота
-                if nts < (len(time_spans)-1) and len( [ev for ev in T[nw][nwd][nts] if ev['type'] == ct_marker_LAB ] ):
-                    d_ev_nb = len( T[nw][nwd][nts+1] )
-                # Если в предыдущем слоте были лабораторные, добавить к количеству событий
-                # количество в предыдущем слоте, и сместить всё на x_skip
-                if nts > 0 and len( [ev for ev in T[nw][nwd][nts-1] if ev['type'] == ct_marker_LAB ] ):
-                    x_skip = d_ev_nb = len( T[nw][nwd][nts-1] )
-
-                if len( T[nw][nwd][nts] ) > 0:
-                    w = col_w / (len( T[nw][nwd][nts] ) + d_ev_nb)
-                    x = left_space  +  nw * (col_w + col_space)
-                    # Первый раз -- для прямоугольников
-                    for nev,evt in enumerate( T[nw][nwd][nts] ):
-                    	st = datetime.strptime( evt['date_time_start'], '%Y-%m-%d %H:%M:%S');
-                        if st.strftime('%d.%m') in holidays: continue;
-
-                        x1 = x + (nev + x_skip) * w
-                        h_ev = 2*row_h + row_space if evt['type'] == ct_marker_LAB else row_h # n_timeslots_in_weekday_len[nwd][timeslot]
-
-                        #if color_by_course == 1 and evt['course'] in course_colors.keys(): fill_color = course_colors[ evt['course'] ]
-                        #elif color_by_group == 1 and evt['group'] in groups_colors.keys(): fill_color = groups_colors[ evt['group'] ]
-                        #elif color_by_room==1 and evt['location'] in room_colors.keys(): fill_color = room_colors[ evt['location'] ]
-                        #elif color_by_prof==1 and evt['prof'] in prof_colors.keys(): fill_color = prof_colors[ evt['prof'] ]
-                        #else: fill_color = 'white'
-                        fill_color = 'white'
-
-                        etree.SubElement( doc, 'rect', x=str(x1), y=str(y1), width=str(w), height=str(h_ev), rx=str(rxy), ry=str(rxy), stroke="black", fill=fill_color )
-                    # Второй раз -- чтобы текст был поверх прямоугольников
-                    for nev,evt in enumerate( T[nw][nwd][nts] ):
-                    	st = datetime.strptime( component['date_time_start'], '%Y-%m-%d %H:%M:%S');
-                        if st.strftime('%d.%m') in holidays: continue;
-
-                        labels = []; shift = []; style = [];
-                        #if selected_course == '': labels.append( evt['course']   );  shift.append(-1.5); # 0
-
-                        style.append( txt_style_2sm )
-                        #if len( evt['course'] ) >= 6: style.append( txt_style_2bsm2 );
-                        #elif len( evt['course'] ) == 5: style.append( txt_style_2bsm );
-                        #else: style.append( txt_style_2b );
-
-                        #if selected_group == '':  labels.append( evt['group']    ); style.append( txt_style_2bsm2 ); shift.append(-1); # 0
-                        #if selected_room == '':   labels.append( evt['location'] ); style.append( txt_style_2sm );  shift.append(-1);
-                        #if selected_prof == '':   labels.append( evt['prof']     ); style.append( txt_style_2smm ); shift.append(0);
-                        labels.append( evt[tag] );
-                        style.append( txt_style_2sm );  shift.append(-1);
-                        n_str = float(len( labels ))
-                        
-                        x1 = x + (nev + x_skip) * w
-                        h_ev = 2*row_h if evt['type'] == ct_marker_LAB else row_h
-                        for i,dy in enumerate( np.linspace( -h_ev/3.5, h_ev/3.5, n_str ) ):
-                            tx = etree.Element( 'text', x = str( x1 + w/2 ), \
-                                y = str( y1 + 6 + h_ev/2 + shift[i] + dy ), \
-                                fill = 'black', style = style[i] );
-                            tx.text = labels[i]; doc.append( tx )
-            y1 += h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space    
-    
-
-    f = open(os.path.join(dst_dir_prefix, '%s.svg' % f_name), 'w')
-    f.write( '<?xml version=\"1.0\" standalone=\"no\"?>\n' )
-    f.write( '<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n' )
-    f.write( '\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n' )
-    f.write( etree.tostring(doc, pretty_print = True) )
-    f.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1386,16 +1002,11 @@ if len(groups_lists) > 1:
 
 
 
-
-
 #all_groups = [gl.split(' ') for gl in groups_lists]
 #for gl in all_groups: print gl
 groups = set(  );
 for gl in groups_lists:
     for g in gl.split(' '): groups.add( g )
-
-draw_prof_room( cal=gcal, color_by_prof = 1, f_name = 'total_by_prof' )
-draw_prof_room( cal=gcal, color_by_room = 1, f_name = 'total_by_room' )
 
 #for r in rooms: draw_prof_room( selected_room = r, f_name = 'room_'+r );
 #for p in prof_list: draw_prof_room( selected_prof = p, f_name = 'prof_'+p+'_by_room' );
@@ -1403,13 +1014,19 @@ draw_prof_room( cal=gcal, color_by_room = 1, f_name = 'total_by_room' )
 #for g in groups: draw_prof_room( selected_group = g, color_by_course = 1, f_name = 'group_'+g );
 
 # График присутствия по лекциям
+if len( sys.argv ) > 3 and 'total' in sys.argv[3:]:
+	prof_list = prof_list_303
+	draw_prof_presence_list( cal=gcal, fn='total_lec_list_303.svg', prof_list=prof_list_303 )
+	
+	prof_list = prof_list_305
+	draw_prof_presence_list( cal=gcal, fn='total_lec_list_305.svg', prof_list=prof_list_305 )
+	
+	prof_list = all_prof_list
+	draw_prof_presence_list( cal=gcal, fn='total_lec_list.svg' )
 
-prof_list = prof_list_303
-draw_prof_presence_list( cal=gcal, fn='total_lec_list_303.svg', prof_list=prof_list_303 )
-prof_list = prof_list_305
-draw_prof_presence_list( cal=gcal, fn='total_lec_list_305.svg', prof_list=prof_list_305 )
-draw_prof_presence_list( cal=gcal, fn='total_lec_list.svg' )
-prof_list = all_prof_list
+	draw_prof_room( cal=gcal, color_by_prof = 1, f_name = 'total_by_prof' )
+	draw_prof_room( cal=gcal, color_by_room = 1, f_name = 'total_by_room' )
+
 
 #draw_prof_labs_2( cal=gcal, f_name='total_labs.svg' ) # ct_marker_LAB, 
 #draw_prof_labs_2( cal=gcal, f_name='total_lec_pract.svg', what2draw=[ct_marker_LK, ct_marker_PZ])
@@ -1417,11 +1034,13 @@ prof_list = all_prof_list
 #draw_prof_labs( f_name='total_labs.svg' )
 #draw_prof_labs_3( f_name='total_labs_3.svg', prof_list=prof_list )
 
-print sys.argv
-print len( sys.argv )
-print '=========================='
+#print sys.argv
+#print len( sys.argv )
+#print '=========================='
+#
+#arg_list = []
 
-arg_list = []
+
 #if len( sys.argv ) == 1: arg_list = ['all']
 #if len( sys.argv ) > 3:
 #	for a in sys.argv[3:]:
