@@ -425,6 +425,8 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     n_stripes_per_prof = [ 0 for p in prof_list ]
     n_spans_in_week = [ 1 for w in wdays[:-1] ]
     n_spans_in_timeslot = [ [2 for t in time_spans] for w in wdays[:-1] ]
+    nb_weeks_in_sem = 17
+
     for component in cal.walk():
         if component.name == "VEVENT" and component['prof'] in prof_list :# and component['first'] == 1: # and component['type'] in [ct_marker_PZ, ct_marker_LK] 
             rooms.add( component['location'] ); groups_list.add( component['group'] ); courses.add( component['course']);
@@ -487,6 +489,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     txt_style_names = 'font-family:Sans;font-size:28px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
     txt_style_1  = 'font-family:Sans;font-size:20px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
     txt_style_2  = 'font-family:Sans;font-size:18px;text-anchor:middle;dominant-baseline:top' # Блоки описания недели
+    txt_style_2sm= 'font-family:Sans;font-size:7px;text-anchor:middle;dominant-baseline:top' # Блоки описания недели
     txt_style_2b =  txt_style_2 + ';font-weight:bold'
     txt_style_4  = 'font-family:Sans;font-size:26px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle'
     txt_style_4b = txt_style_4 + ';font-weight:bold'
@@ -620,6 +623,31 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         x2 = x1 + event_type_box_width
                         w = col_w - event_type_box_width
                         etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:#cccccc;fill-opacity:0.2;stroke:#000000;stroke-width:1' )
+
+                        #########################################################
+                        #                                                       #
+                        # Под описаниями лабораторных находится гребёнка недель #
+                        #                                                       #
+                        #########################################################
+
+                        square_h = 10
+                        week_nbs = [int(x) for x in evt['WEEK_NUMBERS'].split(',')]
+                        for wk in range(1,nb_weeks_in_sem+1):
+                            xx = x1+event_type_box_width+(wk-1)*w/nb_weeks_in_sem
+                            yy = y2+h-square_h
+                            ww = w/(nb_weeks_in_sem)
+                            if wk in week_nbs:
+                                etree.SubElement( doc, 'rect', \
+                                    x=str(xx), width=str(ww), y=str(yy), height=str(square_h), \
+                            	    style='fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1' )
+                                tx = etree.Element( 'text', x=str(xx + square_h/2), y=str(yy + 8), \
+                                    fill='#ffffff', style=txt_style_2sm );  tx.text = str(wk); doc.append( tx )
+                            else:
+                                etree.SubElement( doc, 'rect', \
+                                    x=str(xx), width=str(ww), y=str(yy), height=str(square_h), \
+                            	    style='fill:#ffffff;fill-opacity:0;stroke:#000000;stroke-width:1' )
+
+
 
 
         # Лекции или практика

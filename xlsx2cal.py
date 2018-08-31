@@ -270,6 +270,7 @@ for f in sorted(files):
             event['groups'] = shorten_group_name( groups )
             event['group'] = u' '.join( groups )
             event['type'] = htype
+            event['week_numbers'] = ','.join(all_week_nbs_str)
             #event['first'] = first_event
             cal.add_component( event )
             total_cal.add_component( event )
