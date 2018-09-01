@@ -1,5 +1,6 @@
 #encoding:utf-8
 import string, time, numpy as np
+from copy import deepcopy
 from icalendar import Calendar, Event, LocalTimezone, vDatetime
 from datetime import datetime, timedelta, time
 from dateutil import rrule
@@ -18,9 +19,9 @@ prof_list_303 = sorted([ u'Белобжеский', u'Гуреев', u'Заха�
 prof_shorter_303 = sorted([ u'Белоб-\nжеский', u'Гуреев', u'Захарян', u'Костюков', u'Капырин', u'Новичков', u'Нгуен', u'Соболев', u'Сурков', u'Ушаков', u'Мишин']) # u'Минга-\nлиев',
 prof_longer_303 = sorted([ u'Белобжеский Л.А.', u'Гуреев В.О.', u'Захарян Р.Р.', u'Костюков В.М.', u'Капырин Н.И.', u'Новичков В.М.', u'Нгуен Н.М.', u'Соболев В.И.', u'Сурков Д.А.', u'Ушаков А.Н.', u'Мишин Ю.Н.'])
 
-prof_list_305    = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Плеханов', u'Кузнецов', u'Кошелев'])
-prof_shorter_305 = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Плеханов', u'Кузнецов', u'Кошелев'])
-prof_longer_305  = sorted([ u'Афонин А.А.', u'Пронькин А.Н.', u'Пронькин Д.В.', u'Антонов Д.А.', u'Корягин Л.И.', u'Мельников В.Е.', u'Веремеенко К.К.', u'Жарков М.В.', u'Плеханов В.Е.', u'Кузнецов И.М.', u'Кошелев Б.В.'])
+prof_list_305    = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Плеханов', u'Кузнецов', u'Кошелев', u'Хорев'])
+prof_shorter_305 = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Плеханов', u'Кузнецов', u'Кошелев', u'Хорев'])
+prof_longer_305  = sorted([ u'Афонин А.А.', u'Пронькин А.Н.', u'Пронькин Д.В.', u'Антонов Д.А.', u'Корягин Л.И.', u'Мельников В.Е.', u'Веремеенко К.К.', u'Жарков М.В.', u'Плеханов В.Е.', u'Кузнецов И.М.', u'Кошелев Б.В.', u'Хорев Т.С.'])
 
 prof_list = sorted( prof_list_303 + prof_list_305 )
 all_prof_list = sorted( prof_list_303 + prof_list_305 )
@@ -126,6 +127,7 @@ def short_group_name( s ):
 # Вернуть сокращённое название кабинета
 def short_room_name( s ):
   if u'(Орш' in s: return s.split(u'(Орш')[0]
+  if u'каф.' in s: return u'каф'
   return s
 
 # Вернуть в качестве описания тега -- список групп, сгенерированный из укороченного описания
@@ -425,7 +427,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     n_stripes_per_prof = [ 0 for p in prof_list ]
     n_spans_in_week = [ 1 for w in wdays[:-1] ]
     n_spans_in_timeslot = [ [2 for t in time_spans] for w in wdays[:-1] ]
-    nb_weeks_in_sem = 17
+    nb_weeks_in_sem = 18
 
     for component in cal.walk():
         if component.name == "VEVENT" and component['prof'] in prof_list :# and component['first'] == 1: # and component['type'] in [ct_marker_PZ, ct_marker_LK] 
@@ -489,7 +491,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     txt_style_names = 'font-family:Sans;font-size:28px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
     txt_style_1  = 'font-family:Sans;font-size:20px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
     txt_style_2  = 'font-family:Sans;font-size:18px;text-anchor:middle;dominant-baseline:top' # Блоки описания недели
-    txt_style_2sm= 'font-family:Sans;font-size:7px;text-anchor:middle;dominant-baseline:top' # Блоки описания недели
+    txt_style_2sm= 'font-family:Sans;font-size:9px;text-anchor:middle;dominant-baseline:top' # Блоки описания недели
     txt_style_2b =  txt_style_2 + ';font-weight:bold'
     txt_style_4  = 'font-family:Sans;font-size:26px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle'
     txt_style_4b = txt_style_4 + ';font-weight:bold'
@@ -508,6 +510,17 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     
     import lxml.etree as etree
     doc = etree.Element('svg', width=str(doc_w), height=str(doc_h), version='1.1', xmlns='http://www.w3.org/2000/svg')
+    
+    defs = etree.Element( 'defs' )
+    gr = etree.SubElement( defs, 'linearGradient', id='top-down-gradient', x1='0', x2='0', y1='0', y2='1' )
+    etree.SubElement( gr, 'stop', offset='20%', style='stop-color:rgb(0,0,0);stop-opacity:0.35' )
+    etree.SubElement( gr, 'stop', offset='85%', style='stop-color:rgb(0,0,0);stop-opacity:0' )
+    gr = etree.SubElement( defs, 'linearGradient', id='bottom-up-gradient', x1='0', x2='0', y1='1', y2='0' )
+    etree.SubElement( gr, 'stop', offset='20%', style='stop-color:rgb(0,0,0);stop-opacity:0.35' )
+    etree.SubElement( gr, 'stop', offset='85%', style='stop-color:rgb(0,0,0);stop-opacity:0' )
+
+    doc.append( defs )
+
     etree.SubElement( doc, 'rect', x=str(0), y=str(0), width=str(doc_w), height=str(doc_h), fill="white") # Белый фон
     
     # Фамилии преподавателей
@@ -560,7 +573,8 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
         for nb_timeslot,timeslot in enumerate( time_spans ):
             #nb_slots_before = sum( [ n_spans_in_week[nwl]['n'] for nwl,wl in enumerate(n_spans_in_week) if nwl < nw ] )
             nb_slots_now    = n_spans_in_timeslot[nw][nb_timeslot]
-            w = 2*float(left_space)/5 - col_skip
+            #w = 2*float(left_space)/5 - col_skip
+            w = 3*float(left_space)/5 - col_skip
             x = 2*float(left_space)/5 + col_skip/2
             h = nb_slots_now * row_h # + (nb_slots_now - 1) * row_space
             # Полоска
@@ -577,24 +591,147 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
             tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 + 20), fill='black', style=txt_style_2 );  tx.text = u'%d:%02d' %(timeslot_end.hour, timeslot_end.minute); doc.append( tx )
 
             # Верхняя и нижняя недели
-            w = float(left_space)/5 - col_skip
-            x = 4*float(left_space)/5 + col_skip/2
-            h = row_h
-            etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
-            tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 + 8), fill='black', style=txt_style_2 );  tx.text = u'в.н'; doc.append( tx )
-            y2 = y1 + row_h;
-            etree.SubElement( doc, 'rect', x=str(x), y=str(y2), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='#aaaaaa')
-            tx = etree.Element( 'text', x=str(x + w/2), y=str(y2 + h/2 + 8), fill='white', style=txt_style_2 );  tx.text = u'н.н'; doc.append( tx )
+            #w = float(left_space)/5 - col_skip
+            #x = 4*float(left_space)/5 + col_skip/2
+            #h = row_h
+            #etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
+            #tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 + 8), fill='black', style=txt_style_2 );  tx.text = u'в.н'; doc.append( tx )
+            #y2 = y1 + row_h;
+            #etree.SubElement( doc, 'rect', x=str(x), y=str(y2), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='#aaaaaa')
+            #tx = etree.Element( 'text', x=str(x + w/2), y=str(y2 + h/2 + 8), fill='white', style=txt_style_2 );  tx.text = u'н.н'; doc.append( tx )
 
             y1 += nb_slots_now * row_h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space
 
     
     # Занятия
-    for np,Tpr in enumerate(T):
+    for np,Tpr in enumerate(T): # Перечислим преподавателей
         nb_stripes_before = np
         nb_stripes_now    = 1
         
         x0 = left_space  +  nb_stripes_before * (col_w + col_space)  +  np * col_skip
+
+        # Все занятия
+
+        for nw,Twd in enumerate( Tpr ): # Перечислим дни недели
+            nb_spans_before = sum( n_spans_in_week[:nw] )
+            nb_spans_now    = n_spans_in_week[nw]
+            #y0 = top_space  +  nw*row_skip  +  wday_hat  +  nb_spans_before * row_h   +   nw * (nts+1) * row_space  + row_space  +  nw * row_space
+            y0 = top_space  +  nw*row_skip  +  wday_hat  +  nb_spans_before * row_h   +   nw * row_space
+            fill_color = 'rgb(255, 255, 230)'
+            hh = 2*row_h
+
+            double_events = []
+            for nts,Tt in enumerate( Twd ):
+            	double_events.append([])
+                if nts < len(time_spans)-1 : # Если это не последний отрезок...
+                    for i,evt in enumerate( Tt['L'] ):
+                        if evt['type'] == ct_marker_LAB:
+                            double_events[nts].append( (i,evt) )
+                            #Tt[nts+1]['L'].append(evt)
+                            #Tt[nts+1]['L'][-1]['group'] = ''
+                            #Tt[nts+1]['L'][-1]['location'] = ''
+            for nts,Tt in enumerate( Twd ):
+                for i,evt in double_events[nts]:
+                	st = datetime.strptime( evt['date_time_start'], '%Y-%m-%d %H:%M:%S');
+                	st = st + timedelta( minutes = 100 );
+                	double_evt = deepcopy( evt )
+                	double_evt['date_time_start'] = st.strftime('%Y-%m-%d %H:%M:%S')
+                	double_evt['group'] = '';
+                	double_evt['location'] = '';
+                	Twd[nts+1]['L'].append( double_evt )
+
+            for nts,Tt in enumerate( Twd ): # Перечислим временные отрезки
+                if len( Tt['L'] ) > 0:
+
+                    nb_slots_before = sum( n_spans_in_timeslot[nw][:nts] )
+                    nb_slots_now    = n_spans_in_timeslot[nw][nts]
+                    x1 = x0
+                    y1 = y0  +  nb_slots_before * row_h  +  nts * row_space
+
+                    for i,evt in enumerate( Tt['L'] ):
+
+                        #########################################################
+                        #                                                       #
+                        # Маркер типа события                                   #
+                        #                                                       #
+                        #########################################################
+
+                        if evt['type'] == ct_marker_LAB: marker_color = "#aaaaaa"
+                        elif evt['type'] == ct_marker_PZ: marker_color = "#cc0000"
+                        else: marker_color = "#00aa99"
+
+                        if evt['prof'] in profs_colors.keys(): fill_color = profs_colors[ evt['prof'] ]
+                        h = hh/len(Tt['L'])
+                        y2 = y1 + i*h
+                        # Пусть последнее событие в этом временном отрезке достигает нижней кромки
+                        if i == (len(Tt['L'])-1): h = hh - (y2-y1)
+                        w = event_type_box_width
+                        etree.SubElement( doc, 'rect', x=str(x1), y=str(y2), width=str(w), height=str(h), style='fill:%s;fill-opacity:1;stroke:#000000;stroke-width:1' % marker_color )
+                        if evt['location'] != '':
+                            tx = etree.Element( 'text', x=str(x1 + w/2), y=str(y2 + h/2 + 9), fill='#ffffff', style=txt_style_5b );  tx.text = evt['type']; doc.append( tx )
+
+                        # Повторить маркер без надписи, на этаж ниже, если это лабораторная
+                        #if evt['type'] == ct_marker_LAB: 
+                        #    etree.SubElement( doc, 'rect', x=str(x1), y=str(y2+2*row_h), width=str(w), height=str(h), style='fill:%s;fill-opacity:1;stroke:#000000;stroke-width:1' % marker_color )
+
+                        #########################################################
+                        #                                                       #
+                        # Коробка события                                       #
+                        #                                                       #
+                        #########################################################
+                        
+                        x2 = x1 + event_type_box_width
+                        w = col_w - event_type_box_width
+                        #etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:#cccccc;fill-opacity:0.2;stroke:#000000;stroke-width:1' )
+                        etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:%s;fill-opacity:0.6;stroke:#000000;stroke-width:1' % fill_color )
+                        #if evt['type'] == ct_marker_LAB: 
+                        #    #etree.SubElement( doc, 'rect', x=str(x2), y=str(y2+2*row_h), width=str(w), height=str(h), style='fill:#cccccc;fill-opacity:0.2;stroke:#000000;stroke-width:1' )
+                        #    etree.SubElement( doc, 'rect', x=str(x2), y=str(y2+2*row_h), width=str(w), height=str(h), style='fill:%s;fill-opacity:0.6;stroke:#000000;stroke-width:1' % fill_color )
+
+                        #########################################################
+                        #                                                       #
+                        # Под описаниями лабораторных находится гребёнка недель #
+                        #                                                       #
+                        #########################################################
+
+                        #if evt['location'] != '':
+                        square_h = 10
+                        week_nbs = [int(x) for x in evt['WEEK_NUMBERS'].split(',')]
+                        for wk in range(1, nb_weeks_in_sem+1, 2):
+                            xx = x1 + event_type_box_width + (wk-1)*w/nb_weeks_in_sem
+                            yy = y2
+                            ww = 2 * w/(nb_weeks_in_sem)
+                            wkn = wk
+                            if wk in week_nbs:
+                                etree.SubElement( doc, 'rect', \
+                                    x=str(xx), width=str(ww), y=str(yy), height=str(h/3), \
+                                    style='fill:url(#top-down-gradient);stroke-width:"0"' )
+                                tx = etree.Element( 'text', x=str(xx + ww/2), y=str(yy + 8), \
+                                    fill='#ffffff', style=txt_style_2sm );  tx.text = str(wkn); doc.append( tx )
+                            wkn = wk + 1
+                            xx = x1 + event_type_box_width + (wk-1)*w/nb_weeks_in_sem
+                            yy = y2 + h - h/3
+                            yt = y2 + h - square_h
+                            ww = 2 * w/(nb_weeks_in_sem)
+                            if wk+1 in week_nbs:
+                                etree.SubElement( doc, 'rect', \
+                                    x=str(xx), width=str(ww), y=str(yy), height=str(h/3), \
+                                    style='fill:url(#bottom-up-gradient);stroke-width:"0"' )
+                                #stroke:#000000;stroke-width:1
+                                tx = etree.Element( 'text', x=str(xx + ww/2), y=str(yt + 8), \
+                                    fill='#ffffff', style=txt_style_2sm );  tx.text = str(wkn); doc.append( tx )
+
+                        #########################################################
+                        #                                                       #
+                        # Текст надписи                                         #
+                        #                                                       #
+                        #########################################################
+                        tx = etree.Element( 'text', x=str(x2 + w/2 - 45), y=str(y2 + h/2 + 9), fill='black', style=txt_style_4 );  tx.text = short_group_name(evt['group']); doc.append( tx )
+                        tx = etree.Element( 'text', x=str(x2 + w/2 + 40), y=str(y2 + h/2 + 9), fill='black', style=txt_style_4b );  tx.text = short_room_name(evt['location']); doc.append( tx )
+
+
+        continue
+
 
         # Лабораторные
         for nw,Twd in enumerate( Tpr ):
@@ -602,7 +739,8 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
             nb_spans_now    = n_spans_in_week[nw]
             #y0 = top_space  +  nw*row_skip  +  wday_hat  +  nb_spans_before * row_h   +   nw * (nts+1) * row_space  + row_space  +  nw * row_space
             y0 = top_space  +  nw*row_skip  +  wday_hat  +  nb_spans_before * row_h   +   nw * row_space
-            
+            fill_color = 'rgb(255, 255, 230)'
+
             for nts,Tt in enumerate( Twd ):
                 if len( Tt['L'] ) > 0:
                     nb_slots_before = sum( n_spans_in_timeslot[nw][:nts] )
@@ -610,6 +748,9 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                     x1 = x0
                     y1 = y0  +  nb_slots_before * row_h  +  nts * row_space
                     for i,evt in enumerate( Tt['L'] ):
+
+                    	if evt['prof'] in profs_colors.keys(): fill_color = profs_colors[ evt['prof'] ]
+
                         if evt['type'] != ct_marker_LAB: continue;
                         y2 = y1
                         h = 4 * row_h + row_space
@@ -619,10 +760,11 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         #tx = etree.Element( 'text', x=str(x1 + w/2), y=str(y2 + h/2 + 10-40), fill='#ffffff', style=txt_style_5b );  tx.text = u"Л"; doc.append( tx )
                         #tx = etree.Element( 'text', x=str(x1 + w/2), y=str(y2 + h/2 + 10), fill='#ffffff', style=txt_style_5b );  tx.text = u"A"; doc.append( tx )
                         #tx = etree.Element( 'text', x=str(x1 + w/2), y=str(y2 + h/2 + 10+40), fill='#ffffff', style=txt_style_5b );  tx.text = u"Б"; doc.append( tx )
-                        # Коробка события
+
                         x2 = x1 + event_type_box_width
                         w = col_w - event_type_box_width
                         etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:#cccccc;fill-opacity:0.2;stroke:#000000;stroke-width:1' )
+                        etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:%s;fill-opacity:0.6;stroke:#000000;stroke-width:1' % fill_color )
 
                         #########################################################
                         #                                                       #
@@ -632,21 +774,37 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
                         square_h = 10
                         week_nbs = [int(x) for x in evt['WEEK_NUMBERS'].split(',')]
-                        for wk in range(1,nb_weeks_in_sem+1):
-                            xx = x1+event_type_box_width+(wk-1)*w/nb_weeks_in_sem
-                            yy = y2+h-square_h
-                            ww = w/(nb_weeks_in_sem)
+                        for wk in range(1, nb_weeks_in_sem+1, 2):
+                            xx = x1 + event_type_box_width + (wk-1)*w/nb_weeks_in_sem
+                            yy = y2
+                            ww = 2 * w/(nb_weeks_in_sem)
+                            wkn = wk
                             if wk in week_nbs:
+                                #etree.SubElement( doc, 'rect', \
+                                #    x=str(xx), width=str(ww+1), y=str(yy), height=str(square_h), \
+                            	#    style='fill:#000000;fill-opacity:1;stroke:"none"' )
+                                #    # ;stroke:#000000;stroke-width:1
                                 etree.SubElement( doc, 'rect', \
-                                    x=str(xx), width=str(ww), y=str(yy), height=str(square_h), \
-                            	    style='fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1' )
-                                tx = etree.Element( 'text', x=str(xx + square_h/2), y=str(yy + 8), \
-                                    fill='#ffffff', style=txt_style_2sm );  tx.text = str(wk); doc.append( tx )
-                            else:
-                                etree.SubElement( doc, 'rect', \
-                                    x=str(xx), width=str(ww), y=str(yy), height=str(square_h), \
-                            	    style='fill:#ffffff;fill-opacity:0;stroke:#000000;stroke-width:1' )
+                                    x=str(xx), width=str(ww), y=str(yy), height=str(h/4), \
+                                    style='fill:url(#top-down-gradient);stroke-width:"0"' )
+                                tx = etree.Element( 'text', x=str(xx + ww/2), y=str(yy + 8), \
+                                    fill='#ffffff', style=txt_style_2sm );  tx.text = str(wkn); doc.append( tx )
 
+                            wkn = wk + 1
+                            xx = x1 + event_type_box_width + (wk-1)*w/nb_weeks_in_sem
+                            yy = y2 + h - h/4
+                            yt = y2 + h - square_h
+                            ww = 2 * w/(nb_weeks_in_sem)
+                            if wk+1 in week_nbs:
+                                #etree.SubElement( doc, 'rect', \
+                                #    x=str(xx), width=str(ww), y=str(yy), height=str(h/3), \
+                            	#    style='fill:#000000;fill-opacity:1;stroke:"none"' )
+                                etree.SubElement( doc, 'rect', \
+                                    x=str(xx), width=str(ww), y=str(yy), height=str(h/4), \
+                                    style='fill:url(#bottom-up-gradient);stroke-width:"0"' )
+                                #stroke:#000000;stroke-width:1
+                                tx = etree.Element( 'text', x=str(xx + ww/2), y=str(yt + 8), \
+                                    fill='#ffffff', style=txt_style_2sm );  tx.text = str(wkn); doc.append( tx )
 
 
 
@@ -703,6 +861,29 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         else:
                             tx = etree.Element( 'text', x=str(x2 + w/2 - 30), y=str(y2 + h/2 + 7), fill='black', style=txt_style_2 );  tx.text = short_group_name(evt['group']); doc.append( tx )
                             tx = etree.Element( 'text', x=str(x2 + w/2 + 36), y=str(y2 + h/2 + 7), fill='black', style=txt_style_2b );  tx.text = short_room_name(evt['location']); doc.append( tx )
+
+                        #########################################################
+                        #                                                       #
+                        # Под описаниями лабораторных находится гребёнка недель #
+                        #                                                       #
+                        #########################################################
+
+                        #square_h = 10
+                        #week_nbs = [int(x) for x in evt['WEEK_NUMBERS'].split(',')]
+                        #for wk in range(1,nb_weeks_in_sem+1):
+                        #    xx = x1+event_type_box_width+(wk-1)*w/nb_weeks_in_sem
+                        #    yy = y2+h-square_h
+                        #    ww = w/(nb_weeks_in_sem)
+                        #    if wk in week_nbs:
+                        #        etree.SubElement( doc, 'rect', \
+                        #            x=str(xx), width=str(ww+1), y=str(yy), height=str(square_h), \
+                        #    	    style='fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1' )
+                        #        tx = etree.Element( 'text', x=str(xx + square_h/2), y=str(yy + 8), \
+                        #            fill='#ffffff', style=txt_style_2sm );  tx.text = str(wk); doc.append( tx )
+                        #    else:
+                        #        etree.SubElement( doc, 'rect', \
+                        #            x=str(xx), width=str(ww+1), y=str(yy), height=str(square_h), \
+                        #    	    style='fill:#ffffff;fill-opacity:0;stroke:#000000;stroke-width:1' )
 
     f = open( os.path.join('%s' % fn), 'w')
     f.write( '<?xml version=\"1.0\" standalone=\"no\"?>\n' )
