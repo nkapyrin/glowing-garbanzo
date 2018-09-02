@@ -19,9 +19,9 @@ prof_list_303 = sorted([ u'Белобжеский', u'Гуреев', u'Заха�
 prof_shorter_303 = sorted([ u'Белоб-\nжеский', u'Гуреев', u'Захарян', u'Костюков', u'Капырин', u'Новичков', u'Нгуен', u'Соболев', u'Сурков', u'Ушаков', u'Мишин']) # u'Минга-\nлиев',
 prof_longer_303 = sorted([ u'Белобжеский Л.А.', u'Гуреев В.О.', u'Захарян Р.Р.', u'Костюков В.М.', u'Капырин Н.И.', u'Новичков В.М.', u'Нгуен Н.М.', u'Соболев В.И.', u'Сурков Д.А.', u'Ушаков А.Н.', u'Мишин Ю.Н.'])
 
-prof_list_305    = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Плеханов', u'Кузнецов', u'Кошелев', u'Хорев'])
-prof_shorter_305 = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Плеханов', u'Кузнецов', u'Кошелев', u'Хорев'])
-prof_longer_305  = sorted([ u'Афонин А.А.', u'Пронькин А.Н.', u'Пронькин Д.В.', u'Антонов Д.А.', u'Корягин Л.И.', u'Мельников В.Е.', u'Веремеенко К.К.', u'Жарков М.В.', u'Плеханов В.Е.', u'Кузнецов И.М.', u'Кошелев Б.В.', u'Хорев Т.С.'])
+prof_list_305    = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев'])
+prof_shorter_305 = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев'])
+prof_longer_305  = sorted([ u'Афонин А.А.', u'Пронькин А.Н.', u'Пронькин Д.В.', u'Антонов Д.А.', u'Корягин Л.И.', u'Мельников В.Е.', u'Веремеенко К.К.', u'Жарков М.В.', u'Кузнецов И.М.', u'Кошелев Б.В.', u'Хорев Т.С.'])
 
 prof_list = sorted( prof_list_303 + prof_list_305 )
 all_prof_list = sorted( prof_list_303 + prof_list_305 )
@@ -119,11 +119,23 @@ def courseId2groupName( s ): # 2к3фБ/3 -> 3О207Б, ...
 # Вернуть название набора групп -- либо сокращённое обозначение, либо просто первую в списке
 def short_group_name( s ):
   # Простой вариант
-  p = u''
-  if s.count(',')>0 or s.count(' ')>0: p = u'…'
+  #p = u''
+  #if s.count(',')>0 or s.count(' ')>0: p = u'…'
+  #compiled = s.replace('(',' ').replace(',',' ').split(' ')[0]
+  #if '-' in compiled: compiled = compiled.split(u'-')[1]
+  #return compiled + p
   compiled = s.replace('(',' ').replace(',',' ').split(' ')[0]
   if '-' in compiled: compiled = compiled.split(u'-')[1]
-  return compiled + p
+  if s.count(',')>0 or s.count(' ')>0:
+    first = s.split(' ')[0]
+    if u"Т11" in first.split('-')[0]:
+        prefix = u"T11"
+        suffix = u'к' + first.split('-')[1][0]
+    else:
+        prefix = first.split('-')[0].strip(u'МОВ') + u'ф'
+        suffix = first.split('-')[1][0] + u'к'
+    return prefix+suffix
+  return compiled
 
 # Вернуть сокращённое название кабинета
 def short_room_name( s ):
@@ -452,7 +464,9 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
             #        T[np][nw][nts]['ud'].add( component['updown'] ) # up, dn, updn
             #        n_stripes_per_prof[np] = max( n_stripes_per_prof[np], len(T[np][nw][nts]['L']))
 
-            if (component['type'] != ct_marker_LAB) or (component['type'] == ct_marker_LAB and sum([1 for e in T[np][nw][nts]['L'] if e['type'] == ct_marker_LAB]) == 0):
+            #if ((component['type'] != ct_marker_LAB) or \
+            #        (component['type'] == ct_marker_LAB and sum([1 for e in T[np][nw][nts]['L'] if e['type'] == ct_marker_LAB]) == 0)) and \
+            if component['type'] != u"КСР":
                 T[np][nw][nts]['L'].append( component )
                 T[np][nw][nts]['ud'].add( component['updown'] ) # up, dn, updn
                 n_stripes_per_prof[np] = max( n_stripes_per_prof[np], len(T[np][nw][nts]['L']))
@@ -645,7 +659,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
             for nts,Tt in enumerate( Twd ):
                 for i,evt in double_events[nts]:
                 	st = datetime.strptime( evt['date_time_start'], '%Y-%m-%d %H:%M:%S');
-                	st = st + timedelta( minutes = 100 );
+                	st = st + timedelta( minutes = 105 );
                 	double_evt = deepcopy( evt )
                 	double_evt['date_time_start'] = st.strftime('%Y-%m-%d %H:%M:%S')
                 	double_evt['group'] = '';
@@ -657,10 +671,20 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
                     nb_slots_before = sum( n_spans_in_timeslot[nw][:nts] )
                     nb_slots_now    = n_spans_in_timeslot[nw][nts]
-                    x1 = x0
-                    y1 = y0  +  nb_slots_before * row_h  +  nts * row_space
+                    x1 = x0; y1 = y0  +  nb_slots_before * row_h  +  nts * row_space;
+                    x2 = x1 + event_type_box_width; y2 = y1;
 
-                    for i,evt in enumerate( Tt['L'] ):
+                    h = hh/len(Tt['L'])
+                    # Специальный случай если у нас одна лабораторная без перекрытий
+                    #print len(Tt['L']), len(Twd[nts+1]['L']), Twd[nts+1]['L'][0]['group'], Twd[nts+1]['L'][0]['location'], Twd[nts+1]['L'][0]['prof']
+                    if len(Tt['L']) == 1 and Tt['L'][0]['type'] == ct_marker_LAB and nts<len(Twd)-1 and \
+                          len(Twd[nts+1]['L']) == 1 and Twd[nts+1]['L'][0]['group'] == '':
+                        h = 2*hh
+
+                    for i,evt in enumerate( sorted(Tt['L'], key=lambda e:(e['updown']!='dn',Tt['L'].index(e))) ):
+
+                        # Пусть последнее событие в этом временном отрезке достигает нижней кромки
+                        if len(Tt['L']) > 1 and i == (len(Tt['L'])-1): h = hh - (y2-y1)
 
                         if evt['group'] == '' and len(Twd[nts]['L'])==1 and len(Twd[nts-1]['L'])==1: continue
 
@@ -675,21 +699,12 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         else: marker_color = "#00aa99"
 
                         if evt['prof'] in profs_colors.keys(): fill_color = profs_colors[ evt['prof'] ]
-                        h = hh/len(Tt['L'])
 
-                        # Специальный случай если у нас одна лабораторная без перекрытий
-                        if evt['type'] == ct_marker_LAB:
-                            #print len(Tt['L']), len(Twd[nts+1]['L']), Twd[nts+1]['L'][0]['group'], Twd[nts+1]['L'][0]['location'], Twd[nts+1]['L'][0]['prof']
-                            if len(Tt['L']) == 1 and nts<len(Twd)-1 and len(Twd[nts+1]['L']) == 1 and Twd[nts+1]['L'][0]['group'] == '':
-                                h = 2*hh
-
-                        y2 = y1 + i*h
-                        # Пусть последнее событие в этом временном отрезке достигает нижней кромки
-                        if len(Tt['L']) > 1 and i == (len(Tt['L'])-1): h = hh - (y2-y1)
                         w = event_type_box_width
                         etree.SubElement( doc, 'rect', x=str(x1), y=str(y2), width=str(w), height=str(h), style='fill:%s;fill-opacity:1;stroke:#000000;stroke-width:1' % marker_color )
                         if evt['location'] != '':
                             tx = etree.Element( 'text', x=str(x1 + w/2), y=str(y2 + h/2 + 9), fill='#ffffff', style=txt_style_5b );  tx.text = evt['type']; doc.append( tx )
+                        #tx = etree.Element( 'text', x=str(x2 + w/2), y=str(y1 + h/2 + 9), fill='#ffffff', style=txt_style_5b );  tx.text = evt['type']; doc.append( tx )
 
                         # Повторить маркер без надписи, на этаж ниже, если это лабораторная
                         #if evt['type'] == ct_marker_LAB: 
@@ -701,7 +716,6 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         #                                                       #
                         #########################################################
                         
-                        x2 = x1 + event_type_box_width
                         w = col_w - event_type_box_width
                         # один белый прямоугольник чтобы подготовить поле для элементво с прозрачностью
                         etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1' )
@@ -716,19 +730,21 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         #                                                  #
                         ####################################################
                         
-                        if h<40: h_bevel = row_h/6
-                        else: h_bevel = row_h/4
-                        if evt['location'] != '' and 'UPDOWN' in evt.keys():
-                            if evt['UPDOWN'] == u'н.н.':
-                                etree.SubElement( doc, 'polygon', style="fill:black;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),   str(x1+col_w),str(y2),                 str(x1+col_w-h_bevel),str(y2+h_bevel),   str(x1+h_bevel),str(y2+h_bevel)   ))
-                                etree.SubElement( doc, 'polygon', style="fill:white;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2+h), str(x1+col_w),str(y2+h),               str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+h_bevel),str(y2+h-h_bevel) ))
-                                etree.SubElement( doc, 'polygon', style="fill:#666666;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),   str(x1+h_bevel),str(y2+h_bevel),       str(x1+h_bevel),str(y2+h-h_bevel),       str(x1),str(y2+h)       ))
-                                etree.SubElement( doc, 'polygon', style="fill:#999999;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1+col_w),str(y2), str(x1+col_w-h_bevel),str(y2+h_bevel), str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+col_w),str(y2+h) ))
-                            if evt['UPDOWN'] == u'в.н.':
-                                etree.SubElement( doc, 'polygon', style="fill:white;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),       str(x1+col_w),str(y2),                 str(x1+col_w-h_bevel),str(y2+h_bevel),   str(x1+h_bevel),str(y2+h_bevel)   ))
-                                etree.SubElement( doc, 'polygon', style="fill:black;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2+h),     str(x1+col_w),str(y2+h),               str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+h_bevel),str(y2+h-h_bevel) ))
-                                etree.SubElement( doc, 'polygon', style="fill:#999999;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),       str(x1+h_bevel),str(y2+h_bevel),       str(x1+h_bevel),str(y2+h-h_bevel),       str(x1),str(y2+h)       ))
-                                etree.SubElement( doc, 'polygon', style="fill:#666666;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1+col_w),str(y2), str(x1+col_w-h_bevel),str(y2+h_bevel), str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+col_w),str(y2+h) ))
+                        h_bevel = 0
+                        #if h<40: h_bevel = row_h/6
+                        #else: h_bevel = row_h/4
+
+                        #if evt['location'] != '' and 'UPDOWN' in evt.keys():
+                        #    if evt['UPDOWN'] == u'н.н.':
+                        #        etree.SubElement( doc, 'polygon', style="fill:black;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),   str(x1+col_w),str(y2),                 str(x1+col_w-h_bevel),str(y2+h_bevel),   str(x1+h_bevel),str(y2+h_bevel)   ))
+                        #        etree.SubElement( doc, 'polygon', style="fill:white;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2+h), str(x1+col_w),str(y2+h),               str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+h_bevel),str(y2+h-h_bevel) ))
+                        #        etree.SubElement( doc, 'polygon', style="fill:#666666;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),   str(x1+h_bevel),str(y2+h_bevel),       str(x1+h_bevel),str(y2+h-h_bevel),       str(x1),str(y2+h)       ))
+                        #        etree.SubElement( doc, 'polygon', style="fill:#999999;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1+col_w),str(y2), str(x1+col_w-h_bevel),str(y2+h_bevel), str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+col_w),str(y2+h) ))
+                        #    if evt['UPDOWN'] == u'в.н.':
+                        #        etree.SubElement( doc, 'polygon', style="fill:white;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),       str(x1+col_w),str(y2),                 str(x1+col_w-h_bevel),str(y2+h_bevel),   str(x1+h_bevel),str(y2+h_bevel)   ))
+                        #        etree.SubElement( doc, 'polygon', style="fill:black;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2+h),     str(x1+col_w),str(y2+h),               str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+h_bevel),str(y2+h-h_bevel) ))
+                        #        etree.SubElement( doc, 'polygon', style="fill:#999999;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),       str(x1+h_bevel),str(y2+h_bevel),       str(x1+h_bevel),str(y2+h-h_bevel),       str(x1),str(y2+h)       ))
+                        #        etree.SubElement( doc, 'polygon', style="fill:#666666;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1+col_w),str(y2), str(x1+col_w-h_bevel),str(y2+h_bevel), str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+col_w),str(y2+h) ))
 
                             #if evt['UPDOWN'] == u'н.н.':
                             #    etree.SubElement( doc, 'polygon', style="fill:black;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x2),str(y2),   str(x2+w),str(y2),   str(x2+w-h_bevel),str(y2+h_bevel),   str(x2+h_bevel),str(y2+h_bevel)   ))
@@ -765,6 +781,8 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
                         # Зубцы
                         square_h = 10
+                        h_shadow = h/2
+
                         week_nbs = [int(x) for x in evt['WEEK_NUMBERS'].split(',')]
                         for wk in range(1, nb_weeks_in_sem+1, 2):
                             xx = x1 + event_type_box_width + (wk-1)*(w - h_bevel)/nb_weeks_in_sem
@@ -773,18 +791,18 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                             wkn = wk
                             if wk in week_nbs:
                                 etree.SubElement( doc, 'rect', \
-                                    x=str(xx), width=str(ww), y=str(yy), height=str(h/3), \
+                                    x=str(xx), width=str(ww), y=str(yy), height=str(h_shadow), \
                                     style='fill:url(#top-down-gradient-white);stroke-width:"0"' )
                                 tx = etree.Element( 'text', x=str(xx + ww/2), y=str(yy + 8), \
                                     fill='black', style=txt_style_2sm );  tx.text = str(wkn); doc.append( tx )
                             wkn = wk + 1
                             xx = x1 + event_type_box_width + (wk-1)*(w - h_bevel)/nb_weeks_in_sem
-                            yy = y2 + h - h/3
+                            yy = y2 + h - h_shadow
                             yt = y2 + h - square_h
                             ww = 2 * (w - h_bevel)/(nb_weeks_in_sem)
                             if wk+1 in week_nbs:
                                 etree.SubElement( doc, 'rect', \
-                                    x=str(xx), width=str(ww), y=str(yy), height=str(h/3), \
+                                    x=str(xx), width=str(ww), y=str(yy), height=str(h_shadow), \
                                     style='fill:url(#bottom-up-gradient-white);stroke-width:"0"' )
                                 #stroke:#000000;stroke-width:1
                                 tx = etree.Element( 'text', x=str(xx + ww/2), y=str(yt + 8), \
@@ -821,8 +839,10 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         #            x=str(x2), width=str(w), y=str(y2), height=str(h), \
                         #            style='fill:#000000;fill-opacity:0;stroke:black;stroke-width:1' ) #
                         etree.SubElement( doc, 'rect', \
-                                    x=str(x1), width=str(col_w), y=str(y1), height=str(h), \
+                                    x=str(x1), width=str(col_w), y=str(y2), height=str(h), \
                                     style='fill:#000000;fill-opacity:0;stroke:black;stroke-width:1' ) #
+
+                        y2 = y2 + h
 
     f = open( os.path.join('%s' % fn), 'w')
     f.write( '<?xml version=\"1.0\" standalone=\"no\"?>\n' )

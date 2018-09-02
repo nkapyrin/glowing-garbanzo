@@ -125,6 +125,7 @@ for f in sorted(files):
 
             #if u"Капырин" in name: print time_spans[ic], rec
             #if u"Мишин" in name: print time_spans[ic], rec
+            #if u"Кузнецов" in name: print time_spans[ic], rec
             
             if ws.cell(column=c,row=r+u).coordinate in merged: updn = u''
             elif u == 0: updn = u'в.н.'
@@ -185,6 +186,13 @@ for f in sorted(files):
               span = data[2][ data[2].rfind('('): ].strip().strip('()')
 
 
+            #if u"Кузнецов" in name:
+            #  print '  > room', room
+            #  print '  > short_name', short_name
+            #  print '  > span', span
+            #  print '  > groups', groups
+            #  print '  > htype', htype
+
             #print 'prep_name', prep_name
             #print 'span', span
             #print 'room', room
@@ -213,6 +221,8 @@ for f in sorted(files):
             hlen = timedelta( minutes = 90 )
             cfdt = csdt + hlen
 
+            #if u"Кузнецов" in name: print '  + ', csdt, '\n  + ', cfdt
+
             # Попробуем поискать предыдущее лабораторное занятие и объединить, если есть
             if htype == u'ЛБ': #  or short_name==u"ВоеПод"
               found_ev = None
@@ -224,7 +234,8 @@ for f in sorted(files):
                       ev['location'] == room and \
                       ev['prof'] == prep_name and \
                       ev['date_time_start'].day == course_start.day and \
-                      ev['date_time_start'].month == course_start.month:
+                      ev['date_time_start'].month == course_start.month and \
+                      ev['date_time_start'].hour == (csdt - timedelta( minutes = 105 )).hour:
                     found_ev = ev;
                     break;
               if found_ev:
@@ -268,7 +279,8 @@ for f in sorted(files):
             event['prof'] = prep_name
             event['location'] = room
             event['groups'] = shorten_group_name( groups )
-            event['group'] = u' '.join( groups )
+            # *.cal is limited to 64 symbol columns, then it inserts a line break
+            event['group'] = u' '.join( groups ) #.replace('\n','').replace('\r','')
             event['type'] = htype
             event['week_numbers'] = ','.join(all_week_nbs_str)
             #event['first'] = first_event
