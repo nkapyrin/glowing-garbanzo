@@ -108,6 +108,25 @@ def s_time( s ):
         s_out = s_out.replace( str(i), j )
     return s_out
 
+def shorten_subj( subj_words ):
+  short_name = ""
+  if len(subj_words) == 1:
+  	if len(subj_words[0]) > 7: return subj_words[0][:7]+'.'
+  	else: return subj_words[0]
+  for s in subj_words:
+    t = s.replace('(','').replace(')','')
+    if len(t) == 1: short_name = short_name + t
+    elif t.isupper(): short_name = short_name + t
+    else: short_name = short_name + t[0].upper()
+  if len( short_name ) <= 2:
+    short_name = ''
+    for s in subj_words:
+      t = s.replace('(','').replace(')','')
+      if len(t) == 1: short_name = short_name + t
+      elif t.isupper(): short_name = short_name + t
+      else: short_name = short_name + t[0].upper() + t[1:3]
+  return short_name
+
 # Сделать список групп из сокращённого обозначения (пока, только очные группы)
 def courseId2groupName( s ): # 2к3фБ/3 -> 3О207Б, ...
   s1 = s.split('/'); year = s1[0][0]; fac = s1[0][2]; gr_type = s1[0][4:]
@@ -242,7 +261,42 @@ def tag_me( s ):
 
 
 
+# Передать некоторые занятия другим
+transmit_list_from = {}; transmit_list_to = {}
+if os.path.isfile( 'transmit_list' ):
+	with open( 'transmit_list', 'r' ) as tf:
+		lines = [l.replace('\n','').replace('\r','').strip().decode('utf-8') for l in tf.readlines() ]
+		from_prof = ''; to_prof = '';
+		for l in lines:
+			if l == '': from_prof = ''; to_prof = '';
+			elif l[0] == u'+': to_prof = l.strip(u'+-')
+			elif l[0] == u'-': from_prof = l.strip(u'+-')
+			else:
+				if from_prof != '' and to_prof != '':
+					#10:45-12:15, ауд.310(3), Информационно-статистическая теория измерений, ЛК, 3О-505С-14 (03.09-17.12) 
+					time, room, subj, htype, groups_span = l.split(';')
+					span = groups_span.split('(')[-1].strip(' ()')
+					groups = ' '.join( s.strip() for s in groups_span.split('(')[0].split(',') )
+					time = time.split(u'-')[0]; minute = int( time.split(u':')[1] ); hour = int( time.split(u':')[0] );
+					st_date = span.split('-')[0]; month = int( st_date.split(u'.')[1] ); day = int( st_date.split(u'.')[0] );
+					csdt = datetime( year=sem_start.year, month=month, day=day, hour=hour, minute=minute )
+					e = { 'subj':shorten_subj( subj.replace(u',',u' ').replace(u'-',u' ').replace(u'  ',u' ').split() ), 'span':span, 'room':room.strip(), 'htype':htype.strip().replace(u"ЛР",u"ЛБ"), 'groups':groups, \
+					      'csdt':csdt,'hour':hour, 'min':minute, 'month':month, 'day':day  }
+					if from_prof not in transmit_list_from.keys(): transmit_list_from[from_prof] = []
+					if to_prof not in transmit_list_to.keys(): transmit_list_to[to_prof] = []
+					transmit_list_from[from_prof].append( e )
+					transmit_list_to[to_prof].append( e )
 
+
+#print '[TO]'
+#for k in transmit_list_to.keys():
+#	print k
+#	for e in transmit_list_to[k]: print '  +', e['subj'], e['csdt']
+#
+#print '[FROM]'
+#for k in transmit_list_from.keys():
+#	print k
+#	for e in transmit_list_from[k]: print '  -', e['subj'], e['csdt']
 
 #########################################################################
 # Процедура отрисовки индивидуальных листов преподавателей/комнат/групп #
@@ -442,16 +496,16 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     n_spans_in_timeslot = [ [2 for t in time_spans] for w in wdays[:-1] ]
     nb_weeks_in_sem = 18
 
+    relocated_events = []
+
     for component in cal.walk():
         if component.name == "VEVENT" and component['prof'] in prof_list :# and component['first'] == 1: # and component['type'] in [ct_marker_PZ, ct_marker_LK] 
             rooms.add( component['location'] ); groups_list.add( component['group'] ); courses.add( component['course']);
-
             # component.get('date_time_start')
             st = datetime.strptime( component['date_time_start'], '%Y-%m-%d %H:%M:%S');
             #ft = component.get('date_time_end');
             ft = datetime.strptime( component['date_time_end'], '%Y-%m-%d %H:%M:%S');
             prof = component.get('prof');
-            
             np = prof_list.index( prof ); nts = time_spans.index( st.time() ); nw = st.weekday();
             
             #print st, nts
@@ -466,7 +520,20 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
             #if ((component['type'] != ct_marker_LAB) or \
             #        (component['type'] == ct_marker_LAB and sum([1 for e in T[np][nw][nts]['L'] if e['type'] == ct_marker_LAB]) == 0)) and \
-            if component['type'] != u"КСР":
+
+            # Удалить некоторые лишние занятия
+            found = 0;
+            if prof in transmit_list_from.keys():
+                for evt in transmit_list_from[prof]:
+                    if evt['csdt'] == datetime.strptime( component['DATE_TIME_START'], '%Y-%m-%d %H:%M:%S') and \
+                       evt['subj'].strip() == component['COURSE'].strip() and \
+                       evt['htype'] == component['TYPE'] and evt['groups'] == component['GROUP'] :
+                        #print '                       ZING!';
+                        found = 1;
+                        relocated_events.append( component )
+                        break;
+
+            if not found and component['type'] != u"КСР":
                 T[np][nw][nts]['L'].append( component )
                 T[np][nw][nts]['ud'].add( component['updown'] ) # up, dn, updn
                 n_stripes_per_prof[np] = max( n_stripes_per_prof[np], len(T[np][nw][nts]['L']))
@@ -474,6 +541,31 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
             #if len(T[np][nw][nts]['ud']) == 1 and 'updn' in T[np][nw][nts]['ud'] and n_spans_in_timeslot[nw][nts] < 2:
             #    n_spans_in_timeslot[nw][nts] = 1;
             #else: n_spans_in_timeslot[nw][nts] = 2
+
+    # Добавить занятия, назначенные дополнительно
+    for prof in prof_list:
+        np = prof_list.index( prof );
+        if prof not in transmit_list_to.keys(): continue 
+        for evt in transmit_list_to[prof]:
+            #st = evt['csdt'] #datetime.strptime( component['date_time_start'], '%Y-%m-%d %H:%M:%S');
+            #nts = time_spans.index( st.time() ); nw = st.weekday();
+            #T[np][nw][nts]['L'].append( component )
+            found = 0;
+            component = ''
+            for c in relocated_events:
+               if evt['csdt'] == datetime.strptime( c['DATE_TIME_START'], '%Y-%m-%d %H:%M:%S') and \
+                   evt['subj'].strip() == c['COURSE'].strip() and \
+                   evt['htype'] == c['TYPE'] and evt['groups'] == c['GROUP'] :
+                       found = 1; component = c; break;
+            if found:
+                st = datetime.strptime( component['date_time_start'], '%Y-%m-%d %H:%M:%S');
+                nts = time_spans.index( st.time() ); nw = st.weekday();
+                component['PROF'] = prof # Назначить нового преподавателя
+                T[np][nw][nts]['L'].append( component )
+                T[np][nw][nts]['ud'].add( component['updown'] ) # up, dn, updn
+                n_stripes_per_prof[np] = max( n_stripes_per_prof[np], len(T[np][nw][nts]['L']))
+
+
 
 
     # Раскраска -------------------------------------
@@ -658,13 +750,13 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
             for nts,Tt in enumerate( Twd ):
                 for i,evt in double_events[nts]:
-                	st = datetime.strptime( evt['date_time_start'], '%Y-%m-%d %H:%M:%S');
-                	st = st + timedelta( minutes = 105 );
-                	double_evt = deepcopy( evt )
-                	double_evt['date_time_start'] = st.strftime('%Y-%m-%d %H:%M:%S')
-                	double_evt['group'] = '';
-                	double_evt['location'] = '';
-                	Twd[nts+1]['L'].append( double_evt )
+                    st = datetime.strptime( evt['date_time_start'], '%Y-%m-%d %H:%M:%S');
+                    st = st + timedelta( minutes = 105 );
+                    double_evt = deepcopy( evt )
+                    double_evt['date_time_start'] = st.strftime('%Y-%m-%d %H:%M:%S')
+                    double_evt['group'] = '';
+                    double_evt['location'] = '';
+                    Twd[nts+1]['L'].append( double_evt )
 
             for nts,Tt in enumerate( Twd ): # Перечислим временные отрезки
                 if len( Tt['L'] ) > 0:
@@ -1104,12 +1196,22 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
                         
                         x1 = x + (nev + x_skip) * w
                         h_ev = 2*row_h if evt['type'] == ct_marker_LAB else row_h
-                        for i,dy in enumerate( np.linspace( -h_ev/3.5, h_ev/3.5, n_str ) ):
-                            tx = etree.Element( 'text', x = str( x1 + w/2 ), \
-                                y = str( y1 + 6 + h_ev/2 + shift[i] + dy ), \
-                                fill = 'black', textLength=str(col_w), \
-                                style = style[i] );
-                            tx.text = labels[i]; doc.append( tx )
+
+                        if w > 30: 
+                            for i,dy in enumerate( np.linspace( -h_ev/3.5, h_ev/3.5, n_str ) ):
+                                tx = etree.Element( 'text', x = str( x1 + w/2 ), \
+                                    y = str( y1 + 6 + h_ev/2 + shift[i] + dy ), \
+                                    fill = 'black', style = style[i] );
+                                tx.text = labels[i]; doc.append( tx )
+                        else:
+                            for i,dy in enumerate( np.linspace( -h_ev/3.5, h_ev/3.5, n_str ) ):
+                            	x3 = x1 + w/2
+                            	y3 = y1 + 6 + h_ev/2 + shift[i] + dy
+                                tx = etree.Element( 'text', x = str( x3 ), y = str( y3 ), \
+                                    fill = 'black', style = style[i], \
+                                    transform="translate(%f %f) scale(0.7 1) translate(-%f -%f)" % (x3,y3,x3,y3));
+                                # textLength=str(w) -- сжимает расстояние между буквами
+                                tx.text = labels[i]; doc.append( tx )
             y1 += h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space    
     
 
@@ -1185,16 +1287,12 @@ for gl in groups_lists:
 if len( sys.argv ) > 3 and 'total' in sys.argv[3:]:
 	prof_list = prof_list_303
 	draw_prof_presence_list( cal=gcal, fn='total_lec_list_303.svg', prof_list=prof_list_303 )
-	
 	prof_list = prof_list_305
 	draw_prof_presence_list( cal=gcal, fn='total_lec_list_305.svg', prof_list=prof_list_305 )
-	
 	prof_list = all_prof_list
 	draw_prof_presence_list( cal=gcal, fn='total_lec_list.svg' )
-
 	#draw_prof_room( cal=gcal, color_by_prof = 1, f_name = 'total_by_prof' )
 	#draw_prof_room( cal=gcal, color_by_room = 1, f_name = 'total_by_room' )
-
 
 	#draw_prof_labs_2( cal=gcal, f_name='total_labs.svg' ) # ct_marker_LAB, 
 	#draw_prof_labs_2( cal=gcal, f_name='total_lec_pract.svg', what2draw=[ct_marker_LK, ct_marker_PZ])
