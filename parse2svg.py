@@ -286,6 +286,9 @@ if os.path.isfile( 'transmit_list' ):
 					if to_prof not in transmit_list_to.keys(): transmit_list_to[to_prof] = []
 					transmit_list_from[from_prof].append( e )
 					transmit_list_to[to_prof].append( e )
+					#print 'FROM', from_prof, e['subj'], e['csdt']
+					#print 'TO', to_prof ,e['subj'], e['csdt']
+					#print ' '
 
 
 #print '[TO]'
@@ -496,7 +499,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     n_spans_in_timeslot = [ [2 for t in time_spans] for w in wdays[:-1] ]
     nb_weeks_in_sem = 18
 
-    relocated_events = []
+    #relocated_events = []
 
     for component in cal.walk():
         if component.name == "VEVENT" and component['prof'] in prof_list :# and component['first'] == 1: # and component['type'] in [ct_marker_PZ, ct_marker_LK] 
@@ -528,9 +531,9 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                     if evt['csdt'] == datetime.strptime( component['DATE_TIME_START'], '%Y-%m-%d %H:%M:%S') and \
                        evt['subj'].strip() == component['COURSE'].strip() and \
                        evt['htype'] == component['TYPE'] and evt['groups'] == component['GROUP'] :
-                        #print '                       ZING!';
+                        print '                       ZING!';
                         found = 1;
-                        relocated_events.append( component )
+                        #relocated_events.append( component )
                         break;
 
             if not found and component['type'] != u"КСР":
@@ -552,10 +555,11 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
             #T[np][nw][nts]['L'].append( component )
             found = 0;
             component = ''
-            for c in relocated_events:
-               if evt['csdt'] == datetime.strptime( c['DATE_TIME_START'], '%Y-%m-%d %H:%M:%S') and \
-                   evt['subj'].strip() == c['COURSE'].strip() and \
-                   evt['htype'] == c['TYPE'] and evt['groups'] == c['GROUP'] :
+            for c in cal.walk():
+                if c.name == "VEVENT" and \
+                    evt['csdt'] == datetime.strptime( c['DATE_TIME_START'], '%Y-%m-%d %H:%M:%S') and \
+                    evt['subj'].strip() == c['COURSE'].strip() and \
+                    evt['htype'] == c['TYPE'] and evt['groups'] == c['GROUP'] :
                        found = 1; component = c; break;
             if found:
                 st = datetime.strptime( component['date_time_start'], '%Y-%m-%d %H:%M:%S');
