@@ -531,7 +531,6 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                     if evt['csdt'] == datetime.strptime( component['DATE_TIME_START'], '%Y-%m-%d %H:%M:%S') and \
                        evt['subj'].strip() == component['COURSE'].strip() and \
                        evt['htype'] == component['TYPE'] and evt['groups'] == component['GROUP'] :
-                        print '                       ZING!';
                         found = 1;
                         #relocated_events.append( component )
                         break;
