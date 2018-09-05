@@ -259,10 +259,13 @@ def tag_me( s ):
   return tag
 
 
+#################################################################
+#                                                               #
+# Глобальный перечень заданий, переданных другим преподавателям #
+#                                                               #
+#################################################################
 
-
-# Передать некоторые занятия другим
-transmit_list_from = {}; transmit_list_to = {}
+transmit_list_from_to_pairs = []
 if os.path.isfile( 'transmit_list' ):
 	with open( 'transmit_list', 'r' ) as tf:
 		lines = [l.replace('\n','').replace('\r','').strip().decode('utf-8') for l in tf.readlines() ]
@@ -281,29 +284,18 @@ if os.path.isfile( 'transmit_list' ):
 					st_date = span.split('-')[0]; month = int( st_date.split(u'.')[1] ); day = int( st_date.split(u'.')[0] );
 					csdt = datetime( year=sem_start.year, month=month, day=day, hour=hour, minute=minute )
 					e = { 'subj':shorten_subj( subj.replace(u',',u' ').replace(u'-',u' ').replace(u'  ',u' ').split() ), 'span':span, 'room':room.strip(), 'htype':htype.strip().replace(u"ЛР",u"ЛБ"), 'groups':groups, \
-					      'csdt':csdt,'hour':hour, 'min':minute, 'month':month, 'day':day  }
-					if from_prof not in transmit_list_from.keys(): transmit_list_from[from_prof] = []
-					if to_prof not in transmit_list_to.keys(): transmit_list_to[to_prof] = []
-					transmit_list_from[from_prof].append( e )
-					transmit_list_to[to_prof].append( e )
+					      'csdt':csdt,'hour':hour, 'min':minute, 'month':month, 'day':day, 'from':from_prof, 'to':to_prof  }
 					#print 'FROM', from_prof, e['subj'], e['csdt']
 					#print 'TO', to_prof ,e['subj'], e['csdt']
 					#print ' '
+					if (from_prof, to_prof, e ) not in transmit_list_from_to_pairs: transmit_list_from_to_pairs.append( (from_prof, to_prof, e ) )
 
 
-#print '[TO]'
-#for k in transmit_list_to.keys():
-#	print k
-#	for e in transmit_list_to[k]: print '  +', e['subj'], e['csdt']
-#
-#print '[FROM]'
-#for k in transmit_list_from.keys():
-#	print k
-#	for e in transmit_list_from[k]: print '  -', e['subj'], e['csdt']
-
-#########################################################################
-# Процедура отрисовки индивидуальных листов преподавателей/комнат/групп #
-#########################################################################
+###############################################################
+#                                                             #
+# Отрисовка индивидуальных листов преподавателей/комнат/групп #
+#                                                             #
+###############################################################
 
 def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = '', color_by_course = 0, \
                     color_by_room=0, color_by_prof=0, f_name = 'sample' ):
@@ -481,9 +473,13 @@ def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = ''
 
 
 
-##############################
-# Отрисовка листа с лекциями #
-##############################
+#############################################
+#                                           #
+# Отрисовка большого присутственного листа  #
+# * в планах -- такой же лист для аудиторий #
+# * и такой же лист для групп, но только с аудиториями коридора где висит лист
+#                                           #
+#############################################
 
 def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     
@@ -526,8 +522,8 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
             # Удалить некоторые лишние занятия
             found = 0;
-            if prof in transmit_list_from.keys():
-                for evt in transmit_list_from[prof]:
+            for prof_from,prof_to,evt in transmit_list_from_to_pairs:
+            	if prof_from == prof:
                     if evt['csdt'] == datetime.strptime( component['DATE_TIME_START'], '%Y-%m-%d %H:%M:%S') and \
                        evt['subj'].strip() == component['COURSE'].strip() and \
                        evt['htype'] == component['TYPE'] and evt['groups'] == component['GROUP'] :
@@ -545,17 +541,17 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
             #else: n_spans_in_timeslot[nw][nts] = 2
 
     # Добавить занятия, назначенные дополнительно
-    for prof in prof_list:
-        np = prof_list.index( prof );
-        if prof not in transmit_list_to.keys(): continue 
-        for evt in transmit_list_to[prof]:
-            #st = evt['csdt'] #datetime.strptime( component['date_time_start'], '%Y-%m-%d %H:%M:%S');
-            #nts = time_spans.index( st.time() ); nw = st.weekday();
-            #T[np][nw][nts]['L'].append( component )
+    for prof_from,prof_to,evt in transmit_list_from_to_pairs:
+            if prof_to not in prof_list: continue;
+            #print 'from', prof_from, 'to',  ev0['to'] 
+            np = prof_list.index( prof_to );
+            #if prof not in transmit_list_to.keys(): continue
             found = 0;
             component = ''
+            # Где-то в календаре должно быть событие, которое нужно переназначить
             for c in cal.walk():
                 if c.name == "VEVENT" and \
+                    c['prof'] == prof_from and \
                     evt['csdt'] == datetime.strptime( c['DATE_TIME_START'], '%Y-%m-%d %H:%M:%S') and \
                     evt['subj'].strip() == c['COURSE'].strip() and \
                     evt['htype'] == c['TYPE'] and evt['groups'] == c['GROUP'] :
@@ -563,7 +559,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
             if found:
                 st = datetime.strptime( component['date_time_start'], '%Y-%m-%d %H:%M:%S');
                 nts = time_spans.index( st.time() ); nw = st.weekday();
-                component['PROF'] = prof # Назначить нового преподавателя
+                component['PROF'] = prof_to # Назначить нового преподавателя
                 T[np][nw][nts]['L'].append( component )
                 T[np][nw][nts]['ud'].add( component['updown'] ) # up, dn, updn
                 n_stripes_per_prof[np] = max( n_stripes_per_prof[np], len(T[np][nw][nts]['L']))
@@ -572,7 +568,6 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
 
     # Раскраска -------------------------------------
-
     room_colors = {'':'white'}
     course_colors = {'':'white'}
     groups_colors = {'':'white'}
@@ -825,64 +820,15 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         #                                                  #
                         ####################################################
                         
-                        h_bevel = 0
-                        #if h<40: h_bevel = row_h/6
-                        #else: h_bevel = row_h/4
-
-                        #if evt['location'] != '' and 'UPDOWN' in evt.keys():
-                        #    if evt['UPDOWN'] == u'н.н.':
-                        #        etree.SubElement( doc, 'polygon', style="fill:black;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),   str(x1+col_w),str(y2),                 str(x1+col_w-h_bevel),str(y2+h_bevel),   str(x1+h_bevel),str(y2+h_bevel)   ))
-                        #        etree.SubElement( doc, 'polygon', style="fill:white;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2+h), str(x1+col_w),str(y2+h),               str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+h_bevel),str(y2+h-h_bevel) ))
-                        #        etree.SubElement( doc, 'polygon', style="fill:#666666;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),   str(x1+h_bevel),str(y2+h_bevel),       str(x1+h_bevel),str(y2+h-h_bevel),       str(x1),str(y2+h)       ))
-                        #        etree.SubElement( doc, 'polygon', style="fill:#999999;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1+col_w),str(y2), str(x1+col_w-h_bevel),str(y2+h_bevel), str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+col_w),str(y2+h) ))
-                        #    if evt['UPDOWN'] == u'в.н.':
-                        #        etree.SubElement( doc, 'polygon', style="fill:white;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),       str(x1+col_w),str(y2),                 str(x1+col_w-h_bevel),str(y2+h_bevel),   str(x1+h_bevel),str(y2+h_bevel)   ))
-                        #        etree.SubElement( doc, 'polygon', style="fill:black;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2+h),     str(x1+col_w),str(y2+h),               str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+h_bevel),str(y2+h-h_bevel) ))
-                        #        etree.SubElement( doc, 'polygon', style="fill:#999999;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1),str(y2),       str(x1+h_bevel),str(y2+h_bevel),       str(x1+h_bevel),str(y2+h-h_bevel),       str(x1),str(y2+h)       ))
-                        #        etree.SubElement( doc, 'polygon', style="fill:#666666;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x1+col_w),str(y2), str(x1+col_w-h_bevel),str(y2+h_bevel), str(x1+col_w-h_bevel),str(y2+h-h_bevel), str(x1+col_w),str(y2+h) ))
-
-                            #if evt['UPDOWN'] == u'н.н.':
-                            #    etree.SubElement( doc, 'polygon', style="fill:black;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x2),str(y2),   str(x2+w),str(y2),   str(x2+w-h_bevel),str(y2+h_bevel),   str(x2+h_bevel),str(y2+h_bevel)   ))
-                            #    etree.SubElement( doc, 'polygon', style="fill:white;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x2),str(y2+h), str(x2+w),str(y2+h), str(x2+w-h_bevel),str(y2+h-h_bevel), str(x2+h_bevel),str(y2+h-h_bevel) ))
-                            #    etree.SubElement( doc, 'polygon', style="fill:#999999;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x2),str(y2),   str(x2+h_bevel),str(y2+h_bevel), str(x2+h_bevel),str(y2+h-h_bevel), str(x2),str(y2+h)       ))
-                            #    etree.SubElement( doc, 'polygon', style="fill:#999999;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x2+w),str(y2), str(x2+w-h_bevel),str(y2+h_bevel), str(x2+w-h_bevel),str(y2+h-h_bevel), str(x2+w),str(y2+h) ))
-                            #if evt['UPDOWN'] == u'в.н.':
-                            #    etree.SubElement( doc, 'polygon', style="fill:white;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x2),str(y2),   str(x2+w),str(y2),   str(x2+w-h_bevel),str(y2+h_bevel),   str(x2+h_bevel),str(y2+h_bevel)   ))
-                            #    etree.SubElement( doc, 'polygon', style="fill:black;fill-opacity:0.7",   points="%s,%s %s,%s %s,%s %s,%s"%(str(x2),str(y2+h), str(x2+w),str(y2+h), str(x2+w-h_bevel),str(y2+h-h_bevel), str(x2+h_bevel),str(y2+h-h_bevel) ))
-                            #    etree.SubElement( doc, 'polygon', style="fill:#999999;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x2),str(y2),   str(x2+h_bevel),str(y2+h_bevel), str(x2+h_bevel),str(y2+h-h_bevel), str(x2),str(y2+h)       ))
-                            #    etree.SubElement( doc, 'polygon', style="fill:#999999;fill-opacity:0.7", points="%s,%s %s,%s %s,%s %s,%s"%(str(x2+w),str(y2), str(x2+w-h_bevel),str(y2+h_bevel), str(x2+w-h_bevel),str(y2+h-h_bevel), str(x2+w),str(y2+h) ))
-
-                        #h_gradient = h/2
-                        ## Затенение
-                        #if evt['location'] != '' and 'UPDOWN' in evt.keys():
-                        #    h_gradient = h/2
-                        #    if evt['UPDOWN'] == u'н.н.':
-                        #        etree.SubElement( doc, 'rect', \
-                        #            x=str(x1), width=str(col_w), y=str(y2), height=str(h_gradient), \
-                        #            style='fill:url(#top-down-gradient-black);stroke-width:"0"' )
-                        #    elif evt['UPDOWN'] == u'в.н.':
-                        #        etree.SubElement( doc, 'rect', \
-                        #            x=str(x1), width=str(col_w), y=str(y2 + h - h_gradient), height=str(h_gradient), \
-                        #            style='fill:url(#bottom-up-gradient-black);stroke-width:"0"' )
-                        ## Белый верх
-                        #if evt['location'] != '' and 'UPDOWN' in evt.keys():
-                        #    h_gradient = h/2
-                        #    if evt['UPDOWN'] == u'в.н.': etree.SubElement( doc, 'rect', \
-                        #            x=str(x1), width=str(col_w), y=str(y2), height=str(h_gradient), \
-                        #            style='fill:url(#top-down-gradient-white);stroke-width:"0"' )
-                        #    elif evt['UPDOWN'] == u'н.н.': etree.SubElement( doc, 'rect', \
-                        #            x=str(x1), width=str(col_w), y=str(y2 + h - h_gradient), height=str(h_gradient), \
-                        #            style='fill:url(#bottom-up-gradient-white);stroke-width:"0"' )
-
                         # Зубцы
                         square_h = 10
                         h_shadow = h/2
 
                         week_nbs = [int(x) for x in evt['WEEK_NUMBERS'].split(',')]
                         for wk in range(1, nb_weeks_in_sem+1, 2):
-                            xx = x1 + event_type_box_width + (wk-1)*(w - h_bevel)/nb_weeks_in_sem
+                            xx = x1 + event_type_box_width + (wk-1)*(w)/nb_weeks_in_sem
                             yy = y2
-                            ww = 2 * (w - h_bevel)/(nb_weeks_in_sem)
+                            ww = 2 * (w)/(nb_weeks_in_sem)
                             wkn = wk
                             if wk in week_nbs:
                                 etree.SubElement( doc, 'rect', \
@@ -891,10 +837,10 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                                 tx = etree.Element( 'text', x=str(xx + ww/2), y=str(yy + 8), \
                                     fill='black', style=txt_style_2sm );  tx.text = str(wkn); doc.append( tx )
                             wkn = wk + 1
-                            xx = x1 + event_type_box_width + (wk-1)*(w - h_bevel)/nb_weeks_in_sem
+                            xx = x1 + event_type_box_width + (wk-1)*(w)/nb_weeks_in_sem
                             yy = y2 + h - h_shadow
                             yt = y2 + h - square_h
-                            ww = 2 * (w - h_bevel)/(nb_weeks_in_sem)
+                            ww = 2 * (w)/(nb_weeks_in_sem)
                             if wk+1 in week_nbs:
                                 etree.SubElement( doc, 'rect', \
                                     x=str(xx), width=str(ww), y=str(yy), height=str(h_shadow), \
@@ -903,7 +849,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                                 tx = etree.Element( 'text', x=str(xx + ww/2), y=str(yt + 8), \
                                     fill='black', style=txt_style_2sm );  tx.text = str(wkn); doc.append( tx )
 
-                        # Полупрозрачная наклейка на нижнюю часть лабораторной работы
+                        # Полупрозрачная наклейка на нижнюю часть лабораторной работы, чтобы было видно что это "не полное описание занятия"
                         if evt['group'] == '': etree.SubElement( doc, 'rect', \
                                     x=str(x2), width=str(w), y=str(y2), height=str(h), \
                                     style='fill:#ffffff;fill-opacity:0.75' ) #
@@ -1011,14 +957,46 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
     #prof_calendar.add('prodid', '-//test file//example.com//')
     #prof_calendar.add('X-WR-CALNAME', u"%s - Расписание" % selected_prof )
     
+    selected_events = []
+
     for component in cal.walk():
         if component.name == "VEVENT" and \
                 ( selected_prof == '' or component['prof'] == selected_prof ) and \
                 ( selected_room == '' or component['location'] == selected_room ) and \
                 ( selected_group == '' or selected_group in component['groups'].split(' ') ):
                 #component['type'] == ct_marker_LAB and \
-            rooms.add( component['location'] ); groups_list.add( component['group'] ); courses.add( component['course']);
 
+
+            # Удалить некоторые лишние занятия
+            found = 0;
+            for prof_from,prof_to,evt in transmit_list_from_to_pairs:
+            	if prof_from == component['prof']:
+                    if evt['csdt'] == datetime.strptime( component['DATE_TIME_START'], '%Y-%m-%d %H:%M:%S') and \
+                       evt['subj'].strip() == component['COURSE'].strip() and \
+                       evt['htype'] == component['TYPE'] and evt['groups'] == component['GROUP'] :
+                        found = 1;
+                        #relocated_events.append( component )
+                        break;
+            if found == 0: selected_events.append( component )
+
+
+    # Добавить занятия, назначенные дополнительно
+    for prof_from,prof_to,evt in transmit_list_from_to_pairs:
+            if prof_to not in prof_list: continue;
+            found = 0;
+            component = ''
+            # Где-то в календаре должно быть событие, которое нужно переназначить
+            for c in cal.walk():
+                if c.name == "VEVENT" and \
+                    c['prof'] == prof_from and \
+                    evt['csdt'] == datetime.strptime( c['DATE_TIME_START'], '%Y-%m-%d %H:%M:%S') and \
+                    evt['subj'].strip() == c['COURSE'].strip() and \
+                    evt['htype'] == c['TYPE'] and evt['groups'] == c['GROUP'] :
+                       found = 1; component = c; break;
+            if found: selected_events.append( component )
+
+    for component in selected_events:
+            rooms.add( component['location'] ); groups_list.add( component['group'] ); courses.add( component['course']);
             #if component['first'] == 1:
             #    event = Event()
             #    event['dtstart'] = component['dtstart']; event['dtend']   = component['dtend']; event['location'] = component['location'];
