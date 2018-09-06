@@ -780,6 +780,28 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
                         #########################################################
                         #                                                       #
+                        # Коробка события                                       #
+                        #                                                       #
+                        #########################################################
+                        
+                        w = col_w - event_type_box_width
+                        # один белый прямоугольник чтобы подготовить поле для элементво с прозрачностью
+                        etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1' )
+                        #etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:%s;fill-opacity:0.6;stroke:#000000;stroke-width:1' % fill_color )
+
+                        if evt['UPDOWN'] == u'в.н.':
+                            etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:%s;fill-opacity:0.4;stroke:#000000;stroke-width:1' % fill_color )
+                            etree.SubElement( doc, 'polygon', style='fill:%s;fill-opacity:1;stroke:#000000;stroke-width:0' % fill_color, \
+                                          points="%f,%f %f,%f %f,%f %f,%f %f,%f" % (x2,y2, x2+w,y2, x2+w,y2+h/3, x2+0*w,y2+h, x2,y2+h) )
+                        elif evt['UPDOWN'] == u'н.н.':
+                            etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:%s;fill-opacity:0.4;stroke:#000000;stroke-width:1' % fill_color )
+                            etree.SubElement( doc, 'polygon', style='fill:%s;fill-opacity:1;stroke:#000000;stroke-width:0' % fill_color, \
+                                          points="%f,%f %f,%f %f,%f %f,%f %f,%f" % (x2,y2+h-h/3, x2+1*w,y2, x2+w,y2, x2+w,y2+h, x2,y2+h) )
+                        else: etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:%s;fill-opacity:1;stroke:#000000;stroke-width:1' % fill_color )
+
+
+                        #########################################################
+                        #                                                       #
                         # Маркер типа события                                   #
                         #                                                       #
                         #########################################################
@@ -790,26 +812,16 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
                         if evt['prof'] in profs_colors.keys(): fill_color = profs_colors[ evt['prof'] ]
 
-                        w = event_type_box_width
-                        etree.SubElement( doc, 'rect', x=str(x1), y=str(y2), width=str(w), height=str(h), style='fill:%s;fill-opacity:1;stroke:#000000;stroke-width:1' % marker_color )
+                        etree.SubElement( doc, 'rect', x=str(x1), y=str(y2), width=str(event_type_box_width), height=str(h), style='fill:%s;fill-opacity:1;stroke:#000000;stroke-width:1' % marker_color )
                         if evt['location'] != '':
-                            tx = etree.Element( 'text', x=str(x1 + w/2), y=str(y2 + h/2 + 9), fill='#ffffff', style=txt_style_5b );  tx.text = evt['type']; doc.append( tx )
+                            tx = etree.Element( 'text', x=str(x1 + event_type_box_width/2), y=str(y2 + h/2 + 9), fill='#ffffff', style=txt_style_5b );  tx.text = evt['type']; doc.append( tx )
                         #tx = etree.Element( 'text', x=str(x2 + w/2), y=str(y1 + h/2 + 9), fill='#ffffff', style=txt_style_5b );  tx.text = evt['type']; doc.append( tx )
 
                         # Повторить маркер без надписи, на этаж ниже, если это лабораторная
                         #if evt['type'] == ct_marker_LAB: 
                         #    etree.SubElement( doc, 'rect', x=str(x1), y=str(y2+2*row_h), width=str(w), height=str(h), style='fill:%s;fill-opacity:1;stroke:#000000;stroke-width:1' % marker_color )
 
-                        #########################################################
-                        #                                                       #
-                        # Коробка события                                       #
-                        #                                                       #
-                        #########################################################
                         
-                        w = col_w - event_type_box_width
-                        # один белый прямоугольник чтобы подготовить поле для элементво с прозрачностью
-                        etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1' )
-                        etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:%s;fill-opacity:0.6;stroke:#000000;stroke-width:1' % fill_color )
                         #if evt['type'] == ct_marker_LAB: 
                         #    #etree.SubElement( doc, 'rect', x=str(x2), y=str(y2+2*row_h), width=str(w), height=str(h), style='fill:#cccccc;fill-opacity:0.2;stroke:#000000;stroke-width:1' )
                         #    etree.SubElement( doc, 'rect', x=str(x2), y=str(y2+2*row_h), width=str(w), height=str(h), style='fill:%s;fill-opacity:0.6;stroke:#000000;stroke-width:1' % fill_color )
