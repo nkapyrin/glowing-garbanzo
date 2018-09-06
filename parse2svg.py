@@ -778,6 +778,9 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
                         if evt['group'] == '' and len(Twd[nts]['L'])==1 and len(Twd[nts-1]['L'])==1: continue
 
+                        if evt['prof'] in profs_colors.keys(): fill_color = profs_colors[ evt['prof'] ]
+
+
                         #########################################################
                         #                                                       #
                         # Коробка события                                       #
@@ -809,8 +812,6 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         if evt['type'] == ct_marker_LAB: marker_color = "#aaaaaa"
                         elif evt['type'] == ct_marker_PZ: marker_color = "#cc0000"
                         else: marker_color = "#00aa99"
-
-                        if evt['prof'] in profs_colors.keys(): fill_color = profs_colors[ evt['prof'] ]
 
                         etree.SubElement( doc, 'rect', x=str(x1), y=str(y2), width=str(event_type_box_width), height=str(h), style='fill:%s;fill-opacity:1;stroke:#000000;stroke-width:1' % marker_color )
                         if evt['location'] != '':
