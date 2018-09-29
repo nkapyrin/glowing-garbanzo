@@ -83,7 +83,7 @@ total_cal.add('X-WR-CALNAME', "Общий календарь кафедры" )
 
 
 for f in sorted(files):
-  
+
   print '%', f
 
   wb = load_workbook(filename = os.path.join(sys.argv[1],'xlsx',f))
@@ -120,17 +120,17 @@ for f in sorted(files):
     for ic,c in enumerate(hour_spans):
       for u in [0,1]:
         if ws.cell(column=c,row=r+u).value != None:
-          
+
           for rec in ws.cell(column=c,row=r+u).value.split('---\n'):
 
             #if u"Капырин" in name: print time_spans[ic], rec
             #if u"Мишин" in name: print time_spans[ic], rec
             #if u"Кузнецов" in name: print time_spans[ic], rec
-            
+
             if ws.cell(column=c,row=r+u).coordinate in merged: updn = u''
             elif u == 0: updn = u'в.н.'
             elif u == 1: updn = u'н.н.'
-            
+
             #print rec.replace('\n','//')
 
             if type_of_record == u'преподаватель':
@@ -155,17 +155,26 @@ for f in sorted(files):
               groups = [name]
               #rec = rec.replace(u', ЛР,', u'|ЛР|').replace(u', ЛК,', u'|ЛК|').replace(u', ПЗ,', u'|ПЗ|').replace(u', КСР,', u'|КСР|')
               data = rec.split('\n')
-              prep_name = data[0].strip()
-              prep_name = prep_name.split(' ')[0]
-              room = re.sub( hourspan_re, '', data[1]).strip()
-              room = s_room( room.strip().replace(u'ауд.',u'').replace(u'Ауд.',u'') )
-              subj_words = data[2][ :data[2].rfind(',') ].replace(',',' ').replace('-',' ').replace('  ',' ').split(' ')
-              short_name = shorten( subj_words )
-              htype = data[2][ :data[2].rfind('(') ].split(',')[-1].strip()
-              #tmp = data[2][ data[2].rfind(',')+1: ]
-              #htype = tmp[ :tmp.find('(') ].strip()
-              #htype = htype.replace(u'ЛР', u'лаб.').replace(u'ЛК', u'лекция').replace(u'ПЗ', u'практика').replace(u'КСР', u'КСР')
-              span = data[2][ data[2].rfind('('): ].strip().strip('()')
+              if len(data)>2:
+                  prep_name = data[0].strip()
+                  prep_name = prep_name.split(' ')[0]
+                  room = re.sub( hourspan_re, '', data[1]).strip()
+                  room = s_room( room.strip().replace(u'ауд.',u'').replace(u'Ауд.',u'') )
+                  subj_words = data[2][ :data[2].rfind(',') ].replace(',',' ').replace('-',' ').replace('  ',' ').split(' ')
+                  short_name = shorten( subj_words )
+                  htype = data[2][ :data[2].rfind('(') ].split(',')[-1].strip()
+                  #tmp = data[2][ data[2].rfind(',')+1: ]
+                  #htype = tmp[ :tmp.find('(') ].strip()
+                  #htype = htype.replace(u'ЛР', u'лаб.').replace(u'ЛК', u'лекция').replace(u'ПЗ', u'практика').replace(u'КСР', u'КСР')
+                  span = data[2][ data[2].rfind('('): ].strip().strip('()')
+              else:
+                  prep_name = ''
+                  room = re.sub( hourspan_re, '', data[0]).strip()
+                  room = s_room( room.strip().replace(u'ауд.',u'').replace(u'Ауд.',u'') )
+                  subj_words = data[1][ :data[1].rfind(',') ].replace(',',' ').replace('-',' ').replace('  ',' ').split(' ')
+                  short_name = shorten( subj_words )
+                  htype = data[1][ :data[1].rfind('(') ].split(',')[-1].strip()
+                  span = data[1][ data[1].rfind('('): ].strip().strip('()')
 
             elif type_of_record == u'аудитория':
               rec = rec.replace(u', ЛР', u', ЛБ')
@@ -210,7 +219,7 @@ for f in sorted(files):
 
             #if room == "3-304":
             #  print htype, time_spans[ic]
-  
+
             if '-' in span: course_finish = datetime.strptime( span.split('-')[1].replace(')','').strip(' ')+'.%d'%this_year, '%d.%m.%Y' )
             elif ',' in span: course_finish = datetime.strptime( span.split(',')[1].replace(')','').strip(' ')+'.%d'%this_year, '%d.%m.%Y' )
             else: course_finish = course_start
@@ -262,16 +271,16 @@ for f in sorted(files):
             # Здесь начинается неработющий код по работе с СОБЫТИЯМИ #
             event = Event()
             event_name = short_name + ' (' + htype + ')'
-          
+
             if updn == '': repeat_interval = 1
             else: repeat_interval = 2
             event['rrule'] = "FREQ=WEEKLY;INTERVAL=%d;COUNT=%d" % (repeat_interval, len(all_week_nbs))
-          
+
             event['updown'] = updn
             event['week_span_str'] = str(min(all_week_nbs)) + '-' + str(max(all_week_nbs))
             event['summary'] = short_name + '(%s:%s)' % (htype, shorten_group_name( groups ))
             event['course'] = short_name
-            event['date_time_start'] = csdt 
+            event['date_time_start'] = csdt
             event['dtstart'] = vDatetime(csdt).to_ical()
             event['date_time_end'] = cfdt
             event['dtend'] = vDatetime(cfdt).to_ical()
@@ -293,9 +302,9 @@ for f in sorted(files):
 
               #rec = rec.replace(u', ЛР', u'|лаб.|').replace(u', ЛК', u'|лекция|').replace(u', ПЗ', u'|практика|').replace(u', КСР', u'|КСР|') # Для расписаний групп
               #if fio_re.search( rec ):
-              #  if fio_re.search( rec ).start() == 0: print 'Yey!'; exit() 
+              #  if fio_re.search( rec ).start() == 0: print 'Yey!'; exit()
               #print rec
-  
+
   path = u'cal/' + unicode(f.strip('.xslx').decode('utf-8')) + u'.cal'
 
   ff = open( os.path.join( unicode(sys.argv[1]), path), 'wb')
@@ -308,7 +317,3 @@ for f in sorted(files):
 ff = open( os.path.join(sys.argv[1], 'cal/all.cal'), 'wb' )
 ff.write( total_cal.to_ical().replace('\\;',';' ).replace('\\,',',' ) )
 ff.close()
-
-
-
-
