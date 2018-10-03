@@ -1209,7 +1209,7 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
             y1 += h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space    
     
 
-    f = open(os.path.join(dst_dir_prefix, '%s' % f_name), 'w')
+    f = open(os.path.join(dst_dir_prefix, '%s.svg' % f_name), 'w')
     f.write( '<?xml version=\"1.0\" standalone=\"no\"?>\n' )
     f.write( '<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n' )
     f.write( '\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n' )

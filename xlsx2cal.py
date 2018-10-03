@@ -6,6 +6,7 @@ from openpyxl import Workbook,load_workbook
 
 from icalendar import Calendar, Event, LocalTimezone, vDatetime
 from datetime import datetime, timedelta, time
+from sys import platform
 
 time_spans = [ time(9,0,0), time(10,45,0), time(13,0,0), time(14,45,0), time(16,30,0), time(18,15,0), time(20,00,0) ]
 lab_timespans = [ time(9,0,0), time(13,0,0), time(16,30,0) ] # , time(18,15,0)
@@ -69,9 +70,9 @@ files = [f for f in os.listdir( os.path.join(sys.argv[1],'xlsx') ) if os.path.is
 sem_start = datetime( year=2018, month=9, day=1 )
 sem_finish = datetime( year=2018, month=12, day=29)
 
-print u'Начало семестра:'.encode('utf8'), sem_start.strftime( u"%d.%m.%Y" ).encode('utf8')
-print u'Конец семестра:'.encode('utf8'), sem_finish.strftime( u"%d.%m.%Y" ).encode('utf8')
-print ''.encode('utf8')
+print u'Начало семестра:', sem_start.strftime( u"%d.%m.%Y" )
+print u'Конец семестра:', sem_finish.strftime( u"%d.%m.%Y" )
+print ''
 firstweek_nb = sem_start.isocalendar()[1]
 
 
@@ -84,7 +85,10 @@ total_cal.add('X-WR-CALNAME', "Общий календарь кафедры" )
 
 for f in sorted(files):
 
-  print '%', f
+  if platform == "linux" or platform == "linux2":
+    print '%', f
+  elif platform == "win32":
+    print f.decode('cp1251')
 
   wb = load_workbook(filename = os.path.join(sys.argv[1],'xlsx',f))
 
@@ -265,7 +269,11 @@ for f in sorted(files):
             all_week_nbs_str = [str(s) for s in all_week_nbs]
 
             #print u'; '.join( [ day_names[ir], time_spans[ic].strftime(u'%H:%M'), room, short_name, htype, u','.join(groups), u"недели " + ','.join(all_week_nbs)] ).encode('utf8')
-            print u'; '.join( [ prep_name, day_names[ir], time_spans[ic].strftime(u'%H:%M'), room, short_name, htype, u','.join(groups), u"недели " + ','.join(str(a) for a in all_week_nbs)] ).encode('utf8')
+            if platform == "linux" or platform == "linux2":
+              print u'; '.join( [ prep_name, day_names[ir], time_spans[ic].strftime(u'%H:%M'), room, short_name, htype, u','.join(groups), u"недели " + ','.join(str(a) for a in all_week_nbs)] ).encode('utf8')
+            elif platform == "win32":
+              print_data = u'; '.join( [ prep_name, day_names[ir], time_spans[ic].strftime(u'%H:%M'), room, short_name, htype, u','.join(groups), u"недели " + ','.join(str(a) for a in all_week_nbs)] ).encode('utf8')
+              print print_data.decode('utf-8').encode('cp1251','replace').decode('cp1251')        
 
             ##########################################################
             # Здесь начинается неработющий код по работе с СОБЫТИЯМИ #
@@ -305,7 +313,10 @@ for f in sorted(files):
               #  if fio_re.search( rec ).start() == 0: print 'Yey!'; exit()
               #print rec
 
-  path = u'cal/' + unicode(f.strip('.xslx').decode('utf-8')) + u'.cal'
+            if platform == "linux" or platform == "linux2":
+              path = u'cal/' + unicode(f.strip('.xslx').decode('utf-8')) + u'.cal'
+            elif platform == "win32":
+              path = u'cal/' + unicode(f.strip('.xslx').decode('cp1251')) + u'.cal'  #ISO-8859-1
 
   ff = open( os.path.join( unicode(sys.argv[1]), path), 'wb')
   s = cal.to_ical().replace('\\;',';' ).replace('\\,',',' )
