@@ -20,7 +20,7 @@ prof_shorter_303 = sorted([ u'Белоб-\nжеский', u'Гуреев', u'З�
 prof_longer_303 = sorted([ u'Белобжеский Л.А.', u'Гуреев В.О.', u'Захарян Р.Р.', u'Костюков В.М.', u'Капырин Н.И.', u'Новичков В.М.', u'Нгуен Н.М.', u'Соболев В.И.', u'Сурков Д.А.', u'Ушаков А.Н.', u'Мишин Ю.Н.'])
 
 prof_list_305    = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев', u'Петрухин'])
-prof_shorter_305 = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев'])
+prof_shorter_305 = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев', u'Петрухин'])
 prof_longer_305  = sorted([ u'Афонин А.А.', u'Пронькин А.Н.', u'Пронькин Д.В.', u'Антонов Д.А.', u'Корягин Л.И.', u'Мельников В.Е.', u'Веремеенко К.К.', u'Жарков М.В.', u'Кузнецов И.М.', u'Кошелев Б.В.', u'Хорев Т.С.', u'Петрухин В.А.'])
 
 prof_list = sorted( prof_list_303 + prof_list_305 )
@@ -720,7 +720,6 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
             y1 += nb_slots_now * row_h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space
 
-
     # Занятия
     for np,Tpr in enumerate(T): # Перечислим преподавателей
         nb_stripes_before = np
@@ -938,6 +937,7 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
     nb_weeks = (sem_finish + timedelta(days = 7-sem_finish.weekday()) - (sem_start - timedelta(days = sem_start.weekday()) )).days / 7
 
     T = [ [ [ list() for nts,_ in enumerate( time_spans ) ] for w in wdays[:-1] ] for nw in range(0,nb_weeks) ]
+
     for nw in range(0,nb_weeks):
         for nwd,_ in enumerate( wdays[:-1] ):
             for nts,_ in enumerate( time_spans ):
@@ -978,8 +978,6 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
                 ( selected_room == '' or component['location'] == selected_room ) and \
                 ( selected_group == '' or selected_group in component['groups'].split(' ') ):
                 #component['type'] == ct_marker_LAB and \
-
-
             # Удалить некоторые лишние занятия
             found = 0;
             for prof_from,prof_to,evt in transmit_list_from_to_pairs:
@@ -991,7 +989,6 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
                         #relocated_events.append( component )
                         break;
             if found == 0: selected_events.append( component )
-
 
     # Добавить занятия, назначенные дополнительно
     for prof_from,prof_to,evt in transmit_list_from_to_pairs:
