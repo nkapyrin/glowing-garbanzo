@@ -12,7 +12,7 @@ time_spans = [ time(9,0,0), time(10,45,0), time(13,0,0), time(14,45,0), time(16,
 lab_timespans = [ time(9,0,0), time(13,0,0), time(16,30,0) ] # , time(18,15,0)
 
 day_names = [ u'Понедельник', u'Вторник', u'Среда', u'Четверг', u'Пятница', u'Суббота' ]
-this_year = 2018
+this_year = 2019
 fio_re = re.compile( u'[А-Яа-я]* [А-Я]\.[А-Я]\.' )
 hourspan_re = re.compile( u"[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}" )
 
@@ -67,8 +67,8 @@ files = [f for f in os.listdir( os.path.join(sys.argv[1],'xlsx') ) if os.path.is
 #exit()
 
 # Считать события сначала?
-sem_start = datetime( year=2018, month=9, day=1 )
-sem_finish = datetime( year=2018, month=12, day=29)
+sem_start = datetime( year=2019, month=9, day=2 )
+sem_finish = datetime( year=2019, month=12, day=31)
 
 print u'Начало семестра:', sem_start.strftime( u"%d.%m.%Y" )
 print u'Конец семестра:', sem_finish.strftime( u"%d.%m.%Y" )
@@ -266,6 +266,9 @@ for f in sorted(files):
             all_event_executions = [ course_start + k*span_btw_classes for k in range(0,n_occurences) if course_start + k*span_btw_classes <= min(course_finish,sem_finish) ]
             all_days_txt = [ d.strftime('%d:%m') for d in all_event_executions]
             all_week_nbs = [ d.isocalendar()[1] - firstweek_nb + 1 for d in all_event_executions ]
+            for i in range(len(all_week_nbs)):
+                if all_week_nbs[i]<0:
+                    all_week_nbs[i]=all_week_nbs[i]+52
             all_week_nbs_str = [str(s) for s in all_week_nbs]
 
             #print u'; '.join( [ day_names[ir], time_spans[ic].strftime(u'%H:%M'), room, short_name, htype, u','.join(groups), u"недели " + ','.join(all_week_nbs)] ).encode('utf8')
@@ -273,7 +276,7 @@ for f in sorted(files):
               print u'; '.join( [ prep_name, day_names[ir], time_spans[ic].strftime(u'%H:%M'), room, short_name, htype, u','.join(groups), u"недели " + ','.join(str(a) for a in all_week_nbs)] ).encode('utf8')
             elif platform == "win32":
               print_data = u'; '.join( [ prep_name, day_names[ir], time_spans[ic].strftime(u'%H:%M'), room, short_name, htype, u','.join(groups), u"недели " + ','.join(str(a) for a in all_week_nbs)] ).encode('utf8')
-              print print_data.decode('utf-8').encode('cp1251','replace').decode('cp1251')        
+              print print_data.decode('utf-8').encode('cp1251','replace').decode('cp1251')
 
             ##########################################################
             # Здесь начинается неработющий код по работе с СОБЫТИЯМИ #

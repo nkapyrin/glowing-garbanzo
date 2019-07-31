@@ -5,14 +5,14 @@
 
 Чтобы обработать вашу выгрузку из ИАСУ под Linux:
 
-* клонируйте репозиторий (git clone `https://github.com/nkapyrin/glowing-garbanzo`),
+* клонируйте репозиторий [в пути к репозиторию не должно быть рускоязычных папок!] (git clone `https://github.com/Kortium/glowing-garbanzo`),
 * положите XLS-файлы в `./groups`, `./rooms`, или `./profs`,
 * удалите оттуда остальные папки,
 * запустите sh `./run_all.sh`
 
 Что бы обработать выгрузку из ИАСУ под Windows:
 
-* клонируйте репозиторий (git clone `https://github.com/nkapyrin/glowing-garbanzo`),
+* клонируйте репозиторий [в пути к репозиторию не должно быть рускоязычных папок!] (git clone `https://github.com/Kortium/glowing-garbanzo`),
 * положите XLSX-файлы в `./groups`, `./rooms`, или `./profs` (конвертация XLS файлов под Windows не поддерживается в данной версии),
 * удалите оттуда остальные папки,
 * запустите `run_all.bat`
@@ -28,4 +28,3 @@
 * qrcode
 * matplotlib
 * sys
-

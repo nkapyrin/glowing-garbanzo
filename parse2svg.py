@@ -19,9 +19,9 @@ prof_list_303 = sorted([ u'Белобжеский', u'Гуреев', u'Заха�
 prof_shorter_303 = sorted([ u'Белоб-\nжеский', u'Гуреев', u'Захарян', u'Костюков', u'Капырин', u'Новичков', u'Нгуен', u'Соболев', u'Сурков', u'Ушаков', u'Мишин']) # u'Минга-\nлиев',
 prof_longer_303 = sorted([ u'Белобжеский Л.А.', u'Гуреев В.О.', u'Захарян Р.Р.', u'Костюков В.М.', u'Капырин Н.И.', u'Новичков В.М.', u'Нгуен Н.М.', u'Соболев В.И.', u'Сурков Д.А.', u'Ушаков А.Н.', u'Мишин Ю.Н.'])
 
-prof_list_305    = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев'])
+prof_list_305    = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев', u'Петрухин'])
 prof_shorter_305 = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев'])
-prof_longer_305  = sorted([ u'Афонин А.А.', u'Пронькин А.Н.', u'Пронькин Д.В.', u'Антонов Д.А.', u'Корягин Л.И.', u'Мельников В.Е.', u'Веремеенко К.К.', u'Жарков М.В.', u'Кузнецов И.М.', u'Кошелев Б.В.', u'Хорев Т.С.'])
+prof_longer_305  = sorted([ u'Афонин А.А.', u'Пронькин А.Н.', u'Пронькин Д.В.', u'Антонов Д.А.', u'Корягин Л.И.', u'Мельников В.Е.', u'Веремеенко К.К.', u'Жарков М.В.', u'Кузнецов И.М.', u'Кошелев Б.В.', u'Хорев Т.С.', u'Петрухин В.А.'])
 
 prof_list = sorted( prof_list_303 + prof_list_305 )
 all_prof_list = sorted( prof_list_303 + prof_list_305 )
@@ -97,8 +97,8 @@ week_span_list = even_week_list + odd_week_list
 
 holidays = [ '23.02', '08.03', '01.05', '09.05', '12.06', '04.11' ]
 
-sem_start = datetime( year=2018, month=9, day=1 )
-sem_finish = datetime( year=2018, month=12, day=29)
+sem_start = datetime( year=2019, month=9, day=2 )
+sem_finish = datetime( year=2019, month=12, day=31)
 
 # Сократить временную метку
 def s_time( s ):
@@ -166,9 +166,9 @@ def short_room_name( s ):
 def groupstring2list( s ):
   l = []
   mem = ''
-  # '2к3фБ' (3,4) ->  
-  # '2к3фБ (7-10)' -> 
-  # '4к3фБ (7,9,10,11)' -> 
+  # '2к3фБ' (3,4) ->
+  # '2к3фБ (7-10)' ->
+  # '4к3фБ (7,9,10,11)' ->
   for t in s.replace(' ','').replace('(',',').replace(')','').replace(u'C',u'С').replace(u'c',u'с').split(','):
       if t == '': continue
       elif group_marker2.match(t): mem = ''; l.append(t);
@@ -183,8 +183,8 @@ def groupstring2list( s ):
 # Вернуть список из номеров недель, исходя из тега
 def weekspan2list( s ):   # н.н. | недели 3,5,7,9,11,13,15 | нед. 4,6,8,10
   l = [ int(x) for x in range(1,18) ]
-  if s in even_week_list:  l = [2,4,6,8,10,12,14,16,18];
-  elif s in odd_week_list: l = [1,3,5,7,9,11,13,15,17];
+  if s in even_week_list:  l = [2,4,6,8,10,12,14,16,18,20];
+  elif s in odd_week_list: l = [1,3,5,7,9,11,13,15,17,19];
   else:
       s = s.replace( u'недели', u'нед' )
       if (s[0] in [u'c',u'с']) and s[-3:] == u'нед':
@@ -215,7 +215,7 @@ def tag_me( s ):
   tag = ''
   if s in prof_list: tag = ('prof', s);
   elif s.lower() in course_list: tag = ('course', s)
-  elif s.lower() in wday_list: 
+  elif s.lower() in wday_list:
       if s.lower() in wday1: tag = ('wday', 0)
       elif s.lower() in wday2: tag = ('wday', 1)
       elif s.lower() in wday3: tag = ('wday', 2)
@@ -239,7 +239,7 @@ def tag_me( s ):
     for w in week_span_re:
       if w.match( s.replace(u'недели',u'нед').replace(u'.',u'').replace(u' ','') ):
         tag = ( 'week_span', weekspan2list(s.replace(' ','').replace('.','')) )
-  
+
   if tag == '':
     if s.lower().replace(' ','') in week_span_list : tag = ( 'week_span', weekspan2list(s.replace(' ','').replace('.','')) )
     if date_span1.match( s.replace(' ','') ) or \
@@ -252,7 +252,7 @@ def tag_me( s ):
     if sem_start_re.match( s.lower() ): tag = ('sem_start', s)
     if sem_finish_re.match( s.lower() ): tag = ('sem_finish', s)
 
-  if tag == '': 
+  if tag == '':
       ndigits = sum(c.isdigit() for c in s)
       if ndigits >= 0.3 * float(len(s)) or u'каф.' in s: tag = ('location', s)  # Более 30% цифр -- это название аудитории
       else: tag = ('course', s) # Это название предмета
@@ -276,7 +276,7 @@ if os.path.isfile( 'transmit_list' ):
 			elif l[0] == u'-': from_prof = l.strip(u'+-')
 			else:
 				if from_prof != '' and to_prof != '':
-					#10:45-12:15, ауд.310(3), Информационно-статистическая теория измерений, ЛК, 3О-505С-14 (03.09-17.12) 
+					#10:45-12:15, ауд.310(3), Информационно-статистическая теория измерений, ЛК, 3О-505С-14 (03.09-17.12)
 					time, room, subj, htype, groups_span = l.split(';')
 					span = groups_span.split('(')[-1].strip(' ()')
 					groups = ' '.join( s.strip() for s in groups_span.split('(')[0].split(',') )
@@ -328,7 +328,7 @@ def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = ''
                    ( selected_room != '' and selected_room in loc ) or \
                    ( selected_group != '' and selected_group in groups ) or \
                    ( selected_prof != '' and selected_prof in prof ):
-                    
+
                     # Найти следующую свободную полоску в дне недели, куда можно вписать [событие]
                     free_stripe = -1
                     for i,stripe in enumerate( weekday_stripes[wd] ):
@@ -338,10 +338,10 @@ def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = ''
                         if found == 0: free_stripe = i; break; # Нашли полоску куда можно разместить событие
                     if free_stripe == -1:
                         weekday_stripes[wd].append( list() ); free_stripe = len( weekday_stripes[wd] ) - 1;
-                
+
                     # Разместить [событие] на свободной полоске
                     weekday_stripes[wd][free_stripe].append( component )
-    
+
     # Вспомогательные числа
     nb_of_stripes = sum( [len(x) for x in weekday_stripes] )
     week_starts_of_sem = sorted( set( e['st'] - timedelta( days=e['st'].weekday(), hours=e['st'].hour, minutes=e['st'].minute, seconds=e['st'].second ) for e in cal.walk() if e.name == "VEVENT" ))
@@ -355,21 +355,21 @@ def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = ''
 
     col_w = 46; row_h = 30; rxy = 0; col_space = 2; row_space = 2; col_skip  = 30; row_skip  = 20
     top_space = 100; left_space = 200
-    
+
     doc_w = nb_columns * col_w  +  left_space  +  col_skip*5                    +  (nb_columns - 2)*col_space
     doc_h = nb_rows * row_h     +  top_space   +  row_skip*(nb_weeks_in_sem-2)  +  (nb_rows    - 2)*row_space
-    
+
     txt_style_0  = 'font-family:Sans;font-size:6px;text-anchor:middle;dominant-baseline:top'  # Надписи на блоках
     txt_style_0b = txt_style_0 + ';font-weight:bold'
     txt_style_1  = 'font-family:Sans;font-size:30px;text-anchor:middle;dominant-baseline:top' # Дни недели
     txt_style_2  = 'font-family:Sans;font-size:16px;text-anchor:middle;dominant-baseline:top' # Блоки описания недели
     txt_style_3  = 'font-family:Sans;font-size:48px;text-anchor:middle;dominant-baseline:top' # Номера недель
-    
-    doc = etree.Element('svg', width=str(doc_w), height=str(doc_h), version='1.1', xmlns='http://www.w3.org/2000/svg')    
-    
+
+    doc = etree.Element('svg', width=str(doc_w), height=str(doc_h), version='1.1', xmlns='http://www.w3.org/2000/svg')
+
     # Белый фон
     etree.SubElement( doc, 'rect', x=str(0), y=str(0), width=str(doc_w), height=str(doc_h), fill="white")
-    
+
     # Названия дней недели
     for nb_wday,wday in enumerate(weekday_stripes):
         nb_stripes_before_n = ( sum( [len(weekday_stripes[i]) for i in range(0,nb_wday)] ))
@@ -382,28 +382,28 @@ def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = ''
         tx = etree.Element( 'text', x=str(x + w/2), y=str(y + row_h + 14), fill='black', style=txt_style_1 )
         tx.text = wdays[nb_wday];
         doc.append( tx )
-    
+
     # Номера недель
     for nb_week,wstart in enumerate( sorted(week_starts_of_sem) ):
         nb_spans_before = ( ((len(time_spans) + 1) * nb_week ) ) #+ nb_timeslot )
-        nb_spans_now    = len(time_spans) 
-    
+        nb_spans_now    = len(time_spans)
+
         h = nb_spans_now * row_h  +  (nb_spans_now-1) * row_space
         w = 3*float(left_space)/5  -  row_skip
         x = 0
         y = top_space  +  nb_week*row_skip  +  (nb_spans_before-1) * row_space + nb_spans_before * row_h
-    
+
         etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(doc_w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill="rgba(220,220,220,0.5)", style="fill:#000000;fill-opacity:0.08" )
         etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
-    
+
         wsd = wstart.date();                        ws = u'%d %s' % (wsd.day, month_names[wsd.month-1])
         wed = (wstart + timedelta(days=6) ).date(); we = u'%d %s' % (wed.day, month_names[wed.month-1])
-        
+
         tx = etree.Element( 'text', x=str(x + w/2), y=str(y + h/2 - 64 + 3), fill='black', style=txt_style_2 );  tx.text = ws; doc.append( tx )
         tx = etree.Element( 'text', x=str(x + w/2), y=str(y + h/2 - 24), fill='black', style=txt_style_2 ); tx.text = u'Неделя'; doc.append( tx )
         tx = etree.Element( 'text', x=str(x + w/2), y=str(y + h/2 + 24),  fill='black', style=txt_style_3 ); tx.text = str(nb_week+1); doc.append( tx )
         tx = etree.Element( 'text', x=str(x + w/2), y=str(y + h/2 + 64 + 3), fill='black', style=txt_style_2 ); tx.text = we; doc.append( tx )
-        
+
         # Временные отрезки
         for nb_timeslot,timeslot in enumerate( time_spans ):
             d_slot = nb_timeslot * row_h  +  nb_timeslot * row_space
@@ -413,7 +413,7 @@ def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = ''
             etree.SubElement( doc, 'rect', x=str(x), y=str(y1), width=str(w), height=str(row_h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
             tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + row_h/2 + 8), fill='black', style=txt_style_2 );  tx.text = u'%d:%02d' %(timeslot.hour, timeslot.minute);
             doc.append( tx )
-    
+
     # Блоки занятий
     for nb_wday,wday in enumerate(weekday_stripes):
         for nb_stripe,stripe in enumerate(wday):
@@ -421,7 +421,7 @@ def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = ''
                 for nb_week,wstart in enumerate( sorted(week_starts_of_sem) ):
                     for nb_timeslot,timeslot in enumerate( time_spans ):
                         datetime_slot = datetime.combine( week_starts_of_sem[nb_week].date(), timeslot ) + timedelta( days=e['st'].weekday() )
-                        
+
                         if e['st'] == datetime_slot:
                             nb_stripes_before = ( sum( [len(weekday_stripes[i]) for i in range(0,nb_wday)] ) + nb_stripe)
                             nb_spans_before = ( ((len(time_spans) + 1) * nb_week ) + nb_timeslot )
@@ -436,7 +436,7 @@ def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = ''
 
                             etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(col_w), height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill=fill_color )
                             y1 = y + h/2 + 3
-                            
+
                             # Название предмета
                             tx = etree.Element( 'text', x=str(x + col_w/2), y=str(y1 - 3*float(h)/9), fill='black', style=txt_style_0b )
                             tx.text = e['course']; doc.append( tx ) # "N%03d" % e['id']
@@ -451,7 +451,7 @@ def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = ''
                             # Название группы
                             tx = etree.Element( 'text', x=str(x + col_w/2), y=str(y1 + 3*float(h)/9), fill='black', style=txt_style_0 )
                             tx.text = e['group']; doc.append( tx )
-    
+
     # ElementTree 1.2 doesn't write the SVG file header errata, so do that manually
     f = open( os.path.join('%s' % f_name), 'w')
     f.write( '<?xml version=\"1.0\" standalone=\"no\"?>\n' )
@@ -482,7 +482,7 @@ def draw_prof_room( cal, selected_prof='', selected_room='', selected_group = ''
 #############################################
 
 def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
-    
+
     T = [ [ list() for w in wdays[:-1] ] for p in prof_list ]
     for np,p in enumerate( prof_list ):
         for nw,w in enumerate( wdays[:-1] ):
@@ -498,7 +498,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     #relocated_events = []
 
     for component in cal.walk():
-        if component.name == "VEVENT" and component['prof'] in prof_list :# and component['first'] == 1: # and component['type'] in [ct_marker_PZ, ct_marker_LK] 
+        if component.name == "VEVENT" and component['prof'] in prof_list :# and component['first'] == 1: # and component['type'] in [ct_marker_PZ, ct_marker_LK]
             rooms.add( component['location'] ); groups_list.add( component['group'] ); courses.add( component['course']);
             # component.get('date_time_start')
             st = datetime.strptime( component['date_time_start'], '%Y-%m-%d %H:%M:%S');
@@ -506,7 +506,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
             ft = datetime.strptime( component['date_time_end'], '%Y-%m-%d %H:%M:%S');
             prof = component.get('prof');
             np = prof_list.index( prof ); nts = time_spans.index( st.time() ); nw = st.weekday();
-            
+
             #print st, nts
             #if len( [x for x in T[np][nw][nts]['L'] if x['updown'] == component['updown']] ) > 0:
             #    # не добавляем такой компонент
@@ -543,7 +543,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     # Добавить занятия, назначенные дополнительно
     for prof_from,prof_to,evt in transmit_list_from_to_pairs:
             if prof_to not in prof_list: continue;
-            #print 'from', prof_from, 'to',  ev0['to'] 
+            #print 'from', prof_from, 'to',  ev0['to']
             np = prof_list.index( prof_to );
             #if prof not in transmit_list_to.keys(): continue
             found = 0;
@@ -588,7 +588,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     # -----------------------------------------------
 
     n_spans_in_week = [ sum( n_spans_in_timeslot[nw] ) for nw,_ in enumerate(wdays[:-1]) ]
-    
+
     nb_columns = len( prof_list )
     nb_rows = sum( n_spans_in_week ) # len( wdays ) * (len( time_spans ))
 
@@ -608,20 +608,20 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     txt_style_4  = 'font-family:Sans;font-size:26px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle'
     txt_style_4b = txt_style_4 + ';font-weight:bold'
     txt_style_5  = 'font-family:Sans;font-size:22px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle'
-    txt_style_5b = txt_style_5 + ';font-weight:bold'    
+    txt_style_5b = txt_style_5 + ';font-weight:bold'
     txt_style_3  = 'font-family:Sans;font-size:48px;text-anchor:middle;dominant-baseline:top' # Дни недели
 
     # Соотношение сторон А4-----------------------------
     expected_w = doc_h * 210 / (297 - 10); # 30 мм на заголовок
     #expected_w = doc_h * 297 / (210 - 10); # 30 мм на заголовок
-    
+
     col_w = (expected_w - left_space - nb_columns*col_space - (nb_columns - 1) * col_skip) / nb_columns
     doc_w = left_space  +  nb_columns * (col_w + col_space)  +  (nb_columns - 1) * col_skip + 2
     # --------------------------------------------------
-    
+
     import lxml.etree as etree
     doc = etree.Element('svg', width=str(doc_w), height=str(doc_h), version='1.1', xmlns='http://www.w3.org/2000/svg')
-    
+
     defs = etree.Element( 'defs' )
     gr = etree.SubElement( defs, 'linearGradient', id='top-down-gradient-black', x1='0', x2='0', y1='0', y2='1' )
     etree.SubElement( gr, 'stop', offset='20%', style='stop-color:black;stop-opacity:0.35' )
@@ -639,7 +639,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
     doc.append( defs )
 
     etree.SubElement( doc, 'rect', x=str(0), y=str(0), width=str(doc_w), height=str(doc_h), fill="white") # Белый фон
-    
+
     # Фамилии преподавателей
     for nb_prof,prof in enumerate( prof_list ):
         i_prof = all_prof_list.index( prof )
@@ -660,12 +660,12 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
         etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(w), height=str(h), rx=str(rxy), ry=str(rxy), style=fill_header)
         tx = etree.Element( 'text', x=str(x + w/2), y=str(y + h/2 - 22 - 12*(p_strings-1)), height = str(h), fill='black', style=txt_style_names );
         doc.append( tx )
-        
+
         for t in prof_shorter[i_prof].split('\n'):
             txx = etree.Element( 'tspan', x=str(x + w/2), dy = '1.1em' );
             txx.text = t
             tx.append( txx )
-    
+
     # Названия дней недели
     for nw,wk in enumerate( wdays[:-1] ):
         nb_spans_before = sum( n_spans_in_week[:nw] )
@@ -676,9 +676,9 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
         w = doc_w
         x = 0
         y = top_space  +  nw*row_skip  +  nb_spans_before * row_h   +   nw * (len(time_spans)+1) * row_space
-        etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(doc_w), height=str(h), rx=str(rxy), stroke="black", style="fill:%s;fill-opacity:1" % wday_color[nw])        
+        etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(doc_w), height=str(h), rx=str(rxy), stroke="black", style="fill:%s;fill-opacity:1" % wday_color[nw])
 
-        h = nb_spans_now * row_h   +  (len(time_spans)-1) * row_space  + 2 * row_space; #  +  nb_double_spans * row_space ################# 
+        h = nb_spans_now * row_h   +  (len(time_spans)-1) * row_space  + 2 * row_space; #  +  nb_double_spans * row_space #################
         w = 2*float(left_space)/5  -  col_skip/4
         x = 0
         y = y + wday_hat
@@ -686,7 +686,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
         etree.SubElement( doc, 'rect', x=str(x), y=str(y), width=str(w),     height=str(h), rx=str(rxy), ry=str(rxy), stroke="black", fill='white')
         #tx = etree.Element( 'text', x=str(x + w/2), y=str(y + h/2 + 24),  fill='black', style=txt_style_3 ); tx.text = wk; doc.append( tx )
         tx = etree.Element( 'text', x=str(x + w/2 + 16), y=str(y + h/2), fill='black', transform='rotate(-90,%s,%s)'%(x + w/2 + 16,y + h/2), style=txt_style_3 ); tx.text = wk; doc.append( tx )
-        
+
         # Временные отрезки
         y1 = y + row_space
         for nb_timeslot,timeslot in enumerate( time_spans ):
@@ -720,12 +720,12 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 
             y1 += nb_slots_now * row_h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space
 
-    
+
     # Занятия
     for np,Tpr in enumerate(T): # Перечислим преподавателей
         nb_stripes_before = np
         nb_stripes_now    = 1
-        
+
         x0 = left_space  +  nb_stripes_before * (col_w + col_space)  +  np * col_skip
 
         # Все занятия
@@ -786,7 +786,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         # Коробка события                                       #
                         #                                                       #
                         #########################################################
-                        
+
                         w = col_w - event_type_box_width
                         # один белый прямоугольник чтобы подготовить поле для элементво с прозрачностью
                         etree.SubElement( doc, 'rect', x=str(x2), y=str(y2), width=str(w), height=str(h), style='fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1' )
@@ -819,11 +819,11 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         #tx = etree.Element( 'text', x=str(x2 + w/2), y=str(y1 + h/2 + 9), fill='#ffffff', style=txt_style_5b );  tx.text = evt['type']; doc.append( tx )
 
                         # Повторить маркер без надписи, на этаж ниже, если это лабораторная
-                        #if evt['type'] == ct_marker_LAB: 
+                        #if evt['type'] == ct_marker_LAB:
                         #    etree.SubElement( doc, 'rect', x=str(x1), y=str(y2+2*row_h), width=str(w), height=str(h), style='fill:%s;fill-opacity:1;stroke:#000000;stroke-width:1' % marker_color )
 
-                        
-                        #if evt['type'] == ct_marker_LAB: 
+
+                        #if evt['type'] == ct_marker_LAB:
                         #    #etree.SubElement( doc, 'rect', x=str(x2), y=str(y2+2*row_h), width=str(w), height=str(h), style='fill:#cccccc;fill-opacity:0.2;stroke:#000000;stroke-width:1' )
                         #    etree.SubElement( doc, 'rect', x=str(x2), y=str(y2+2*row_h), width=str(w), height=str(h), style='fill:%s;fill-opacity:0.6;stroke:#000000;stroke-width:1' % fill_color )
 
@@ -832,7 +832,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         # Под описаниями находится гребёнка номеров недель #
                         #                                                  #
                         ####################################################
-                        
+
                         # Зубцы
                         square_h = 10
                         h_shadow = h/2
@@ -922,7 +922,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_group = '', selected_course = '', \
                               color_by_course = 0, color_by_room=0, color_by_prof=0, color_by_group=0, f_name = 'sample',
                               draw_every_timeslot = 0 ):
-    
+
     txt_style_0  = 'font-family:Sans;font-size:6px;text-anchor:middle;dominant-baseline:top'  # Надписи на блоках
     txt_style_0b = txt_style_0 + ';font-weight:bold'
     txt_style_1  = 'font-family:Sans;font-size:14px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
@@ -934,15 +934,15 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
     txt_style_2sm  = txt_style_2.replace( 'font-size:14px;', 'font-size:10px;' )
     txt_style_2smm = txt_style_2.replace( 'font-size:14px;', 'font-size:8px;' )
     txt_style_3  = 'font-family:Sans;font-size:32px;text-anchor:middle;dominant-baseline:top' # Дни недели
-    
+
     nb_weeks = (sem_finish + timedelta(days = 7-sem_finish.weekday()) - (sem_start - timedelta(days = sem_start.weekday()) )).days / 7
-    
+
     T = [ [ [ list() for nts,_ in enumerate( time_spans ) ] for w in wdays[:-1] ] for nw in range(0,nb_weeks) ]
     for nw in range(0,nb_weeks):
         for nwd,_ in enumerate( wdays[:-1] ):
             for nts,_ in enumerate( time_spans ):
                 T[nw][nwd][nts] = list()
-    
+
     # Заполнить таблицу
     n_timeslots_in_weekday = [[ 0 for nts in time_spans ] for wd in wdays[:-1]]
     n_timeslots_in_weekday_set = [ set() for wd in wdays[:-1]]
@@ -958,7 +958,7 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
                     n_timeslots_in_weekday_set[nwd].add( timeslot );
 
     n_timeslots_in_weekday_len = [ dict() for wd in wdays[:-1]]
-    
+
     # Заготовки для расцветки
     room_colors = {'':'white'}
     course_colors = {'':'white'}
@@ -969,7 +969,7 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
     #prof_calendar.add('version', '3.0')
     #prof_calendar.add('prodid', '-//test file//example.com//')
     #prof_calendar.add('X-WR-CALNAME', u"%s - Расписание" % selected_prof )
-    
+
     selected_events = []
 
     for component in cal.walk():
@@ -1015,7 +1015,7 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
             #    event['dtstart'] = component['dtstart']; event['dtend']   = component['dtend']; event['location'] = component['location'];
             #    event['rrule']   = component['rrule'];   event['summary'] = component['summary'] # + "(%s)" % component['groups']
             #    prof_calendar.add_component( event )
-            
+
             #st = component.get('date_time_start');
             st = datetime.strptime( component['date_time_start'], '%Y-%m-%d %H:%M:%S');
             #et = component.get('date_time_start');
@@ -1046,15 +1046,15 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
         for i,course in enumerate(sorted(courses)): course_colors[course] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(courses)) )[0:3] ]) + ')'
     if len( groups_list ) > 0:
         for i,groups in enumerate( sorted(groups_list) ): groups_colors[groups] = 'rgb(' + ', '.join( [str(int(255*x)) for x in cmap( float(i) / (len(groups_list)) )[0:3] ]) + ')'
-    
+
     # Сколько временных отрезков должно быть нарисовано в каждый день недели
     n_timeslots_in_weekday_sum = [ sum( 1 for n in n_timeslots_in_weekday_set[nwd] ) for nwd,_ in enumerate( wdays[:-1] ) ]
     n_timeslots_in_weekday_min = [ max( 1,n ) for n in n_timeslots_in_weekday_sum ]
-    
+
     nb_columns = nb_weeks
     nb_rows = sum(n_timeslots_in_weekday_min)
     nb_timespans = sum(n_timeslots_in_weekday_min)
-    
+
     col_w = 50; row_h = 40; rxy = 5; col_space = 4; row_space = 5; col_skip = 5; row_skip = 20; top_space = 40; left_space = 110; date_space = 16;
     doc_w = left_space  +  nb_columns * col_w  +  (nb_columns - 1)*col_space
 
@@ -1062,9 +1062,9 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
     row_h = (expected_h - top_space - (len(wdays)-2) * row_skip  -  (nb_timespans + (len(wdays)-1)) * row_space  - (len(wdays) - 1)*(date_space + row_space)) / nb_rows
     if row_h < 30: # row_h = 30;
         expected_h = doc_w * 297 / 210; # Портретная ориентация
-        row_h = (expected_h - top_space - (len(wdays)-2) * row_skip  -  (nb_timespans + (len(wdays)-1)) * row_space  - (len(wdays) - 1)*(date_space + row_space)) / nb_rows        
+        row_h = (expected_h - top_space - (len(wdays)-2) * row_skip  -  (nb_timespans + (len(wdays)-1)) * row_space  - (len(wdays) - 1)*(date_space + row_space)) / nb_rows
     doc_h = top_space  + (len(wdays)-2) * row_skip  +  (nb_timespans + (len(wdays)-1)) * row_space  +  nb_rows * row_h  +  (len(wdays) - 1)*(date_space + row_space)
-    
+
     import lxml.etree as etree
     doc = etree.Element('svg', width=str(doc_w), height=str(doc_h), version='1.1', xmlns='http://www.w3.org/2000/svg')
     etree.SubElement( doc, 'rect', x=str(0), y=str(0), width=str(doc_w), height=str(doc_h), fill="white") # Белый фон
@@ -1076,7 +1076,7 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
     if selected_group != '': tx.text += selected_group
     if selected_course != '': tx.text += selected_course
     doc.append( tx )
-    
+
     # Номера недель
     for nw in range(0,nb_weeks):
         w = col_w
@@ -1133,7 +1133,7 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
             dummydate = datetime(1, 1, 1, timeslot.hour, timeslot.minute, timeslot.second)
             timeslot_end = dummydate + timedelta( hours=1, minutes=30 );
             tx = etree.Element( 'text', x=str(x + w/2), y=str(y1 + h/2 + 12), fill='black', style=txt_style_22 );  tx.text = u'%d:%02d' %(timeslot_end.hour, timeslot_end.minute); doc.append( tx )
-            
+
             y1 += h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space
 
         y1 = y + row_space + date_space + row_space
@@ -1187,11 +1187,11 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
                         if selected_room == '':   labels.append( short_room_name(evt['location']) ); style.append( txt_style_2sm );  shift.append(-1);
                         if selected_prof == '':   labels.append( evt['prof']     ); style.append( txt_style_2smm ); shift.append(0);
                         n_str = float(len( labels ))
-                        
+
                         x1 = x + (nev + x_skip) * w
                         h_ev = 2*row_h if evt['type'] == ct_marker_LAB else row_h
 
-                        if w > 30: 
+                        if w > 30:
                             for i,dy in enumerate( np.linspace( -h_ev/3.5, h_ev/3.5, n_str ) ):
                                 tx = etree.Element( 'text', x = str( x1 + w/2 ), \
                                     y = str( y1 + 6 + h_ev/2 + shift[i] + dy ), \
@@ -1206,8 +1206,8 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
                                     transform="translate(%f %f) scale(0.7 1) translate(-%f -%f)" % (x3,y3,x3,y3));
                                 # textLength=str(w) -- сжимает расстояние между буквами
                                 tx.text = labels[i]; doc.append( tx )
-            y1 += h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space    
-    
+            y1 += h  +  row_space  # (nb_slots_now - 1) * row_space  +  row_space
+
 
     f = open(os.path.join(dst_dir_prefix, '%s.svg' % f_name), 'w')
     f.write( '<?xml version=\"1.0\" standalone=\"no\"?>\n' )
@@ -1288,7 +1288,7 @@ if len( sys.argv ) > 3 and 'total' in sys.argv[3:]:
 	#draw_prof_room( cal=gcal, color_by_prof = 1, f_name = 'total_by_prof' )
 	#draw_prof_room( cal=gcal, color_by_room = 1, f_name = 'total_by_room' )
 
-	#draw_prof_labs_2( cal=gcal, f_name='total_labs.svg' ) # ct_marker_LAB, 
+	#draw_prof_labs_2( cal=gcal, f_name='total_labs.svg' ) # ct_marker_LAB,
 	#draw_prof_labs_2( cal=gcal, f_name='total_lec_pract.svg', what2draw=[ct_marker_LK, ct_marker_PZ])
 
 #draw_prof_labs( f_name='total_labs.svg' )
