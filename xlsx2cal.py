@@ -35,17 +35,19 @@ def shorten( subj_words ):
   	if len(subj_words[0]) > 7: return subj_words[0][:7]+'.'
   	else: return subj_words[0]
   for s in subj_words:
-    t = s.replace('(','').replace(')','')
-    if len(t) == 1: short_name = short_name + t
-    elif t.isupper(): short_name = short_name + t
-    else: short_name = short_name + t[0].upper()
+    if s!='':
+        t = s.replace('(','').replace(')','')
+        if len(t) == 1: short_name = short_name + t
+        elif t.isupper(): short_name = short_name + t
+        else: short_name = short_name + t[0].upper()
   if len( short_name ) <= 2:
     short_name = ''
     for s in subj_words:
-      t = s.replace('(','').replace(')','')
-      if len(t) == 1: short_name = short_name + t
-      elif t.isupper(): short_name = short_name + t
-      else: short_name = short_name + t[0].upper() + t[1:3]
+      if s!='':
+          t = s.replace('(','').replace(')','')
+          if len(t) == 1: short_name = short_name + t
+          elif t.isupper(): short_name = short_name + t
+          else: short_name = short_name + t[0].upper() + t[1:3]
   return short_name
 
 def shorten_group_name( g ):
@@ -189,6 +191,7 @@ for f in sorted(files):
               prep_name = re.sub( hourspan_re, '', data[0]).strip()
               prep_name = prep_name.split(' ')[0]
               subj_words = data[1][ :data[1].rfind(',') ].replace(',',' ').replace('-',' ').replace('  ',' ').split(' ')
+              print (subj_words)
               short_name = shorten( subj_words )
               htype = data[1][ data[1].rfind(',')+1: ].strip()
               #htype = htype.replace(u'ЛР', u'лаб.').replace(u'ЛК', u'лекция').replace(u'ПЗ', u'практика').replace(u'КСР', u'КСР')

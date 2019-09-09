@@ -1,7 +1,13 @@
 groups/cal
 groups/svg
+groups/xls/*
+groups/xlsx/*
 rooms/cal
 rooms/svg
+rooms/xls/*
+rooms/xlsx/*
 profs/cal
 profs/svg
+profs/xls/*
+profs/xlsx/*
 *.svg
