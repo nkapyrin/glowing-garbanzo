@@ -15,9 +15,9 @@ course_list = [ u'уирс', u'бола', u'спецтех1', u'мсс', u'ип�
 sem_start_re = re.compile( u'начало семестра: [0-9.]+' )
 sem_finish_re = re.compile( u'конец семестра: [0-9.]+' )
 
-prof_list_303 = sorted([ u'Белобжеский', u'Гуреев', u'Захарян', u'Костюков', u'Капырин', u'Новичков', u'Нгуен', u'Соболев', u'Сурков', u'Ушаков', u'Мишин']) # u'Мингалиев',
-prof_shorter_303 = sorted([ u'Белоб-\nжеский', u'Гуреев', u'Захарян', u'Костюков', u'Капырин', u'Новичков', u'Нгуен', u'Соболев', u'Сурков', u'Ушаков', u'Мишин']) # u'Минга-\nлиев',
-prof_longer_303 = sorted([ u'Белобжеский Л.А.', u'Гуреев В.О.', u'Захарян Р.Р.', u'Костюков В.М.', u'Капырин Н.И.', u'Новичков В.М.', u'Нгуен Н.М.', u'Соболев В.И.', u'Сурков Д.А.', u'Ушаков А.Н.', u'Мишин Ю.Н.'])
+prof_list_303 = sorted([ u'Белобжеский', u'Гуреев', u'Захарян', u'Костюков', u'Новичков', u'Нгуен', u'Сурков', u'Ушаков', u'Мишин']) # u'Мингалиев',
+prof_shorter_303 = sorted([ u'Белоб-\nжеский', u'Гуреев', u'Захарян', u'Костюков', u'Новичков', u'Нгуен', u'Сурков', u'Ушаков', u'Мишин']) # u'Минга-\nлиев',
+prof_longer_303 = sorted([ u'Белобжеский Л.А.', u'Гуреев В.О.', u'Захарян Р.Р.', u'Костюков В.М.', u'Новичков В.М.', u'Нгуен Н.М.', u'Сурков Д.А.', u'Ушаков А.Н.', u'Мишин Ю.Н.'])
 
 prof_list_305    = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев', u'Петрухин'])
 prof_shorter_305 = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев', u'Петрухин'])
@@ -532,7 +532,12 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         break;
 
             if not found and component['type'] != u"КСР":
-                T[np][nw][nts]['L'].append( component )
+                try:
+                    T[np][nw][nts]['L'].append( component )
+                except:
+                    # print(T)
+                    # print(component)
+                    exit()
                 T[np][nw][nts]['ud'].add( component['updown'] ) # up, dn, updn
                 n_stripes_per_prof[np] = max( n_stripes_per_prof[np], len(T[np][nw][nts]['L']))
 
@@ -921,7 +926,6 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
 def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_group = '', selected_course = '', \
                               color_by_course = 0, color_by_room=0, color_by_prof=0, color_by_group=0, f_name = 'sample',
                               draw_every_timeslot = 0 ):
-
     txt_style_0  = 'font-family:Sans;font-size:6px;text-anchor:middle;dominant-baseline:top'  # Надписи на блоках
     txt_style_0b = txt_style_0 + ';font-weight:bold'
     txt_style_1  = 'font-family:Sans;font-size:14px;text-anchor:middle;dominant-baseline:middle;text-anchor:middle' # Фамилии
@@ -1026,14 +1030,15 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
               if evt > sem_finish: continue;
               nw = (( evt + timedelta(days = 7-evt.weekday()) - (sem_start - timedelta(days = sem_start.weekday()) ))).days / 7 - 1      # ?-1
               timeslot = evt.time(); nts = time_spans.index( timeslot );
-              T[nw][nwd][nts].append( component )
-              # Сколько в каждом дне недели будет временных отрезков (вспомогательная часть)
-              #if draw_every_timeslot == 0:
-              n_timeslots_in_weekday_set[nwd].add( timeslot )
-              # event_length = (et - st).minutes
-              event_length = 2 if component['type'] == ct_marker_LAB else 1;
-              n_timeslots_in_weekday_len[nwd][timeslot] = event_length
-              if component['type'] == ct_marker_LAB: n_timeslots_in_weekday_set[nwd].add( time_spans[nts+1] )
+              if nw<len(T) and nw>0 and nwd>=0:
+                  T[nw][nwd][nts].append( component )
+                  # Сколько в каждом дне недели будет временных отрезков (вспомогательная часть)
+                  #if draw_every_timeslot == 0:
+                  n_timeslots_in_weekday_set[nwd].add( timeslot )
+                  # event_length = (et - st).minutes
+                  event_length = 2 if component['type'] == ct_marker_LAB else 1;
+                  n_timeslots_in_weekday_len[nwd][timeslot] = event_length
+                  if component['type'] == ct_marker_LAB: n_timeslots_in_weekday_set[nwd].add( time_spans[nts+1] )
 
 
     cmap = cm.get_cmap('Pastel1') # Spectral, hsv, Paired, gist_rainbow
@@ -1180,9 +1185,9 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
                         #elif len( evt['course'] ) == 5: style.append( txt_style_2bsm );
                         #else: style.append( txt_style_2b );
 
-                        if selected_group == '':  labels.append( short_group_name(evt['group'])    ); style.append( txt_style_2bsm2 ); shift.append(-1); # 0
+                        if selected_group == '':  labels.append( short_group_name(evt['group']) ); style.append( txt_style_2bsm2 ); shift.append(-1); # 0
                         if selected_room == '':   labels.append( short_room_name(evt['location']) ); style.append( txt_style_2sm );  shift.append(-1);
-                        if selected_prof == '':   labels.append( evt['prof']     ); style.append( txt_style_2smm ); shift.append(0);
+                        if selected_prof == '':   labels.append( evt['prof'] ); style.append( txt_style_2smm ); shift.append(0);
                         n_str = float(len( labels ))
 
                         x1 = x + (nev + x_skip) * w
@@ -1331,6 +1336,7 @@ if len( sys.argv ) > 3 and 'total' in sys.argv[3:]:
 
 #### restore this
 if len( sys.argv ) > 3 and 'profs' in sys.argv[3:]:
+  print("personal_prof")
   for p in prof_list: draw_prof_personal_sheet( cal=gcal, selected_prof = p, f_name = 'prof_'+p+'_by_group', color_by_group = 1 );
   #for p in prof_list: draw_prof_personal_sheet( cal=gcal, selected_prof = p, f_name = 'prof_'+p+'_by_group_all_timeslots', color_by_group = 1, draw_every_timeslot=1 );
 #for p in prof_list: draw_prof_personal_sheet( cal=gcal, selected_prof = p, f_name = 'prof_'+p+'_by_room', color_by_room = 1 );

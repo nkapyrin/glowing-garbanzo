@@ -188,18 +188,18 @@ for f in sorted(files):
               #print rec.replace('\n','//')
               room = name
               data = rec.split('\n')
-              prep_name = re.sub( hourspan_re, '', data[0]).strip()
-              prep_name = prep_name.split(' ')[0]
-              subj_words = data[1][ :data[1].rfind(',') ].replace(',',' ').replace('-',' ').replace('  ',' ').split(' ')
-              print (subj_words)
-              short_name = shorten( subj_words )
-              htype = data[1][ data[1].rfind(',')+1: ].strip()
-              #htype = htype.replace(u'ЛР', u'лаб.').replace(u'ЛК', u'лекция').replace(u'ПЗ', u'практика').replace(u'КСР', u'КСР')
-              #htype = tmp[ :tmp.find('(') ].strip()
-              #tmp = data[1][ data[1].rfind(',')+1: ]
-              tmp = data[2][ :data[2].rfind('(') ].strip()
-              groups = [ t.strip(' ') for t in tmp.split(',') ]
-              span = data[2][ data[2].rfind('('): ].strip().strip('()')
+              if len(data)>2:
+                  prep_name = re.sub( hourspan_re, '', data[0]).strip()
+                  prep_name = prep_name.split(' ')[0]
+                  subj_words = data[1][ :data[1].rfind(',') ].replace(',',' ').replace('-',' ').replace('  ',' ').split(' ')
+                  short_name = shorten( subj_words )
+                  htype = data[1][ data[1].rfind(',')+1: ].strip()
+                  #htype = htype.replace(u'ЛР', u'лаб.').replace(u'ЛК', u'лекция').replace(u'ПЗ', u'практика').replace(u'КСР', u'КСР')
+                  #htype = tmp[ :tmp.find('(') ].strip()
+                  #tmp = data[1][ data[1].rfind(',')+1: ]
+                  tmp = data[2][ :data[2].rfind('(') ].strip()
+                  groups = [ t.strip(' ') for t in tmp.split(',') ]
+                  span = data[2][ data[2].rfind('('): ].strip().strip('()')
 
 
             #if u"Кузнецов" in name:
