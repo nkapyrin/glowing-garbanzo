@@ -12,7 +12,7 @@ time_spans = [ time(9,0,0), time(10,45,0), time(13,0,0), time(14,45,0), time(16,
 lab_timespans = [ time(9,0,0), time(13,0,0), time(16,30,0) ] # , time(18,15,0)
 
 day_names = [ u'Понедельник', u'Вторник', u'Среда', u'Четверг', u'Пятница', u'Суббота' ]
-this_year = 2019
+this_year = 2020
 fio_re = re.compile( u'[А-Яа-я]* [А-Я]\.[А-Я]\.' )
 hourspan_re = re.compile( u"[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}" )
 
@@ -69,8 +69,8 @@ files = [f for f in os.listdir( os.path.join(sys.argv[1],'xlsx') ) if os.path.is
 #exit()
 
 # Считать события сначала?
-sem_start = datetime( year=2019, month=9, day=2 )
-sem_finish = datetime( year=2019, month=12, day=31)
+sem_start = datetime( year=2020, month=8, day=31 )
+sem_finish = datetime( year=2020, month=12, day=31)
 
 print u'Начало семестра:', sem_start.strftime( u"%d.%m.%Y" )
 print u'Конец семестра:', sem_finish.strftime( u"%d.%m.%Y" )

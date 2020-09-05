@@ -19,9 +19,9 @@ prof_list_303 = sorted([ u'Белобжеский', u'Гуреев', u'Заха�
 prof_shorter_303 = sorted([ u'Белоб-\nжеский', u'Гуреев', u'Захарян', u'Костюков', u'Новичков', u'Нгуен', u'Сурков', u'Ушаков', u'Мишин']) # u'Минга-\nлиев',
 prof_longer_303 = sorted([ u'Белобжеский Л.А.', u'Гуреев В.О.', u'Захарян Р.Р.', u'Костюков В.М.', u'Новичков В.М.', u'Нгуен Н.М.', u'Сурков Д.А.', u'Ушаков А.Н.', u'Мишин Ю.Н.'])
 
-prof_list_305    = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев', u'Петрухин'])
-prof_shorter_305 = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев', u'Петрухин'])
-prof_longer_305  = sorted([ u'Афонин А.А.', u'Пронькин А.Н.', u'Пронькин Д.В.', u'Антонов Д.А.', u'Корягин Л.И.', u'Мельников В.Е.', u'Веремеенко К.К.', u'Жарков М.В.', u'Кузнецов И.М.', u'Кошелев Б.В.', u'Хорев Т.С.', u'Петрухин В.А.'])
+prof_list_305    = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев', u'Петрухин', u'Черноморский'])
+prof_shorter_305 = sorted([ u'Афонин', u'Пронькин', u'Бережной', u'Антонов', u'Корягин', u'Мельников', u'Веремеенко', u'Жарков', u'Кузнецов', u'Кошелев', u'Хорев', u'Петрухин', u'Черноморский'])
+prof_longer_305  = sorted([ u'Афонин А.А.', u'Пронькин А.Н.', u'Пронькин Д.В.', u'Антонов Д.А.', u'Корягин Л.И.', u'Мельников В.Е.', u'Веремеенко К.К.', u'Жарков М.В.', u'Кузнецов И.М.', u'Кошелев Б.В.', u'Хорев Т.С.', u'Петрухин В.А.', u'Черноморский А.И.',])
 
 prof_list = sorted( prof_list_303 + prof_list_305 )
 all_prof_list = sorted( prof_list_303 + prof_list_305 )
@@ -97,8 +97,8 @@ week_span_list = even_week_list + odd_week_list
 
 holidays = [ '23.02', '08.03', '01.05', '09.05', '12.06', '04.11' ]
 
-sem_start = datetime( year=2019, month=9, day=2 )
-sem_finish = datetime( year=2019, month=12, day=31)
+sem_start = datetime( year=2020, month=8, day=31 )
+sem_finish = datetime( year=2020, month=12, day=31)
 
 # Сократить временную метку
 def s_time( s ):
@@ -531,7 +531,7 @@ def draw_prof_presence_list( cal, fn='prof_list.svg', prof_list=prof_list ):
                         #relocated_events.append( component )
                         break;
 
-            if not found and component['type'] != u"КСР":
+            if component['type'] != u"КСР": #not found and
                 try:
                     T[np][nw][nts]['L'].append( component )
                 except:
@@ -1011,6 +1011,7 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
 
     for component in selected_events:
             rooms.add( component['location'] ); groups_list.add( component['group'] ); courses.add( component['course']);
+            p=False;
             #if component['first'] == 1:
             #    event = Event()
             #    event['dtstart'] = component['dtstart']; event['dtend']   = component['dtend']; event['location'] = component['location'];
@@ -1029,8 +1030,10 @@ def draw_prof_personal_sheet( cal, selected_prof='', selected_room='', selected_
             for evt in list(rrset):
               if evt > sem_finish: continue;
               nw = (( evt + timedelta(days = 7-evt.weekday()) - (sem_start - timedelta(days = sem_start.weekday()) ))).days / 7 - 1      # ?-1
+
               timeslot = evt.time(); nts = time_spans.index( timeslot );
-              if nw<len(T) and nw>0 and nwd>=0:
+
+              if nw<len(T) and nw>=0 and nwd>=0:
                   T[nw][nwd][nts].append( component )
                   # Сколько в каждом дне недели будет временных отрезков (вспомогательная часть)
                   #if draw_every_timeslot == 0:
