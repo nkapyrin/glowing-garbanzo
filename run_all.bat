@@ -9,7 +9,7 @@ IF NOT EXIST "%CD%\xlsx" MKDIR "%CD%\xlsx"
 CHDIR ..
 
 c:\python27\python.exe xlsx2cal.py "%WORK_DIR%"
-c:\python27\python.exe parse2svg.py "%WORK_DIR%" "%WORK_DIR%\svg" profs
+c:\python27\python.exe parse2svg.py "%WORK_DIR%" "%WORK_DIR%\svg" profs total
 
 
 SET WORK_DIR=%CD%\rooms
