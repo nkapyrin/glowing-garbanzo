@@ -97,8 +97,8 @@ week_span_list = even_week_list + odd_week_list
 
 holidays = [ '23.02', '08.03', '01.05', '09.05', '12.06', '04.11' ]
 
-sem_start = datetime( year=2020, month=8, day=31 )
-sem_finish = datetime( year=2020, month=12, day=31)
+sem_start = datetime( year=2021, month=2, day=7 )
+sem_finish = datetime( year=2021, month=6, day=30)
 
 # Сократить временную метку
 def s_time( s ):
