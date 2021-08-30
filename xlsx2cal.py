@@ -69,8 +69,8 @@ files = [f for f in os.listdir( os.path.join(sys.argv[1],'xlsx') ) if os.path.is
 #exit()
 
 # Считать события сначала?
-sem_start = datetime( year=2021, month=2, day=7 )
-sem_finish = datetime( year=2021, month=6, day=30)
+sem_start = datetime( year=2021, month=9, day=1 )
+sem_finish = datetime( year=2021, month=12, day=31)
 
 print u'Начало семестра:', sem_start.strftime( u"%d.%m.%Y" )
 print u'Конец семестра:', sem_finish.strftime( u"%d.%m.%Y" )
